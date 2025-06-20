@@ -1,0 +1,11 @@
+*.env
+.idea/
+tmp/
+*.bkp
+*.log
+
+### Mise
+**/mise.local.toml
+
+### Python
+*.venv/
