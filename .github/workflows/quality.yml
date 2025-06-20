@@ -1,0 +1,20 @@
+name: Lint and Secret Detection
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main, feature/** ]
+
+jobs:
+  lint-and-secrets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run gitleaks secret detection
+        uses: gitleaks/gitleaks-action@v2.3.4
+        with:
+          args: "--path=. --verbose"
