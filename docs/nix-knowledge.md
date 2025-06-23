@@ -19,3 +19,7 @@ keep-outputs = true
 build-users-group = nixbld
 extra-experimental-features = flakes nix-command
 ```
+
+## Nix Knowledge
+
+Use https://github.com/nix-community/awesome-nix
