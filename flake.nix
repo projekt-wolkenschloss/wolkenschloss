@@ -10,6 +10,7 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    #    wolkenschloss.url = "github:projekt-wolkenschloss/wolkenschloss/feature/a-simple-backup-server";
   };
 
   outputs =
@@ -24,8 +25,17 @@
     {
       formatter = {
         x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+        aarch64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+        i686-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+        x86_64-darwin = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
       };
       nixosConfigurations = {
+        wolkenschloss-development-wsl = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs; };
+          system = "x86_64-linux";
+          modules = (import ./machines/wolkenschloss-development-wsl.nix) inputs;
+        };
+
         nixos-testing-1 = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
           system = "x86_64-linux";
