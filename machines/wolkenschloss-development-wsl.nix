@@ -1,4 +1,9 @@
-{ self, nixos-wsl, ... }:
+{
+  self,
+  nixos-wsl,
+  home-manager,
+  ...
+}:
 [
   nixos-wsl.nixosModules.default
 
@@ -8,7 +13,10 @@
     networking.hostName = "wolkenschloss-development-wsl";
     wsl.enable = true;
     wsl.defaultUser = "nixos";
-    nix.settings.experimental-features = [ "nix-command" "flakes" ];
+    nix.settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     boot.loader.systemd-boot.configurationLimit = 10;
     nix.gc = {
       automatic = true;
@@ -17,7 +25,11 @@
     };
   }
 
-  # TODO add users
-  # TODO add home manager
+  home-manager.nixosModules.home-manager
+  {
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
+  }
 
+  ../users/wolke.nix
 ]
