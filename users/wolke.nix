@@ -1,3 +1,5 @@
+# Creates and configures the wolke user.
+# It is the default user of the Wolkenschloss hosts.
 { pkgs, home-manager, ... }:
 let
   username = "wolke";
