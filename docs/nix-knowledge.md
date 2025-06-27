@@ -4,6 +4,14 @@ Because I'm new to the Nix world, I still am not certain how to use everything p
 Here I document stuff I want to remember for now. Sometime in the future, this
 will be removed or reworked to a contribution guide.
 
+## Documentation and other useful sites
+
+- Nix Manual: https://nix.dev/manual/nix/latest/introduction
+- Nix language tutorial: https://nix.dev/tutorials/nix-language
+- Nixos Options, Packages and flakes search: https://search.nixos.org
+- Home Manager docs: https://nix-community.github.io/home-manager
+- Home Manager options search: https://home-manager-options.extranix.com/
+
 ## Installing Nix in WSL
 
 Install like here: <https://nix-community.github.io/NixOS-WSL/install.html>

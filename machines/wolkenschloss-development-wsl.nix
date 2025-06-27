@@ -1,5 +1,11 @@
-{ self, nixos-wsl, ... }:
+{
+  self,
+  nixos-wsl,
+  home-manager,
+  ...
+}:
 [
+  # Enables WSL support
   nixos-wsl.nixosModules.default
 
   # Basic system configuration
@@ -7,17 +13,27 @@
     system.stateVersion = "24.11";
     networking.hostName = "wolkenschloss-development-wsl";
     wsl.enable = true;
-    wsl.defaultUser = "nixos";
-    nix.settings.experimental-features = [ "nix-command" "flakes" ];
+    wsl.defaultUser = "wolke";
+    nix.settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     boot.loader.systemd-boot.configurationLimit = 10;
     nix.gc = {
       automatic = true;
       dates = "weekly";
       options = "--delete-older-than 1w";
     };
+    time.timeZone = "Europe/Berlin";
   }
 
-  # TODO add users
-  # TODO add home manager
+  # Activating home manager
+  home-manager.nixosModules.home-manager
+  {
+    home-manager.useGlobalPkgs = true;
+    home-manager.useUserPackages = true;
+  }
 
+  # Configures users
+  ../users/wolke.nix
 ]
