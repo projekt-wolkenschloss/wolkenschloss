@@ -13,7 +13,7 @@
     system.stateVersion = "24.11";
     networking.hostName = "wolkenschloss-development-wsl";
     wsl.enable = true;
-    wsl.defaultUser = "wolke";
+    wsl.defaultUser = "nixos";
     nix.settings.experimental-features = [
       "nix-command"
       "flakes"
