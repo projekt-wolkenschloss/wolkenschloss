@@ -9,7 +9,7 @@ The user should have two options:
 
 A. Creating a bootable drive with a pre-configured Wolkenschloss image via another computer
 
-B. Creating a bootable drive with a standard NixOS image and the installing Wolkenschloss
+B. Creating a bootable drive with a standard NixOS image and then installing Wolkenschloss
 
 ### Option A: Booting and installing Wolkenschloss
 
@@ -35,7 +35,7 @@ Prerequisites:
 2. Boot from the drive
 3. Change the password with `passwd`
 4. Get the IP address with `ip addr`
-5. Test if you can connect and your password works: `ssh -v nixos@<ip-address>`
+5. Test if you can connect and your password works from another machine: `ssh -v nixos@<ip-address>`
 6. Deploy wolkenschloss with
 `nix run github:nix-community/nixos-anywhere -- --generate-hardware-config nixos-facter ./facter.json --flake '.#myconfig' --target-host nixos@<ip-address>`
 

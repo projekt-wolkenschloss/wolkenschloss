@@ -1,12 +1,24 @@
-{ self, nixpkgs, disko, facter-modules, ... }:
+{ self, nixpkgs, disko, nixos-hardware, facter-modules, ... }:
 [
+  # Importing the nixos-hardware module for Raspberry Pi 3B
+  nixos-hardware.nixosModules.raspberry-pi-3
+  # Importing the Raspberry Pi 3B specific configuration
+  ../devices/raspi-3B.nix
   {
-    system.stateVersion = "24.11";
-    networking.hostName = "wolkenschloss-backup-server";
+    system.stateVersion = "25.05";
+    networking.hostName = "sturmfeste";
 
     # Explicitly setting nix path for nixos-anywhere deployment
     # See https://github.com/nix-community/nixos-anywhere/blob/main/docs/howtos/nix-path.md
     nix.nixPath = [ "nixpkgs=${nixpkgs}" ];
+    environment.systemPackages = with pkgs; [
+      nano
+    ];
+
+    services.openssh = {
+      enable = true;
+      openFirewall = true;
+    };
   }
 
   facter-modules.nixosModules.facter
