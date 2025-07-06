@@ -10,6 +10,11 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    disko = {
+      url = "github:nix-community/disko/latest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    facter-modules.url = "github:numtide/nixos-facter-modules";
     #    wolkenschloss.url = "github:projekt-wolkenschloss/wolkenschloss/feature/a-simple-backup-server";
   };
 
@@ -52,9 +57,7 @@
         backup-server = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
           system = "x86_64-linux";
-          modules = [
-            ./machines/backup-server.nix
-          ];
+          modules = (import ./machines/backup-server.nix) inputs;
         };
       };
     };
