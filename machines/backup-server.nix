@@ -1,4 +1,4 @@
-{ self, nixpkgs, disko, nixos-hardware, facter-modules, ... }:
+{ self, nixpkgs, disko, nixos-hardware, ... }:
 [
   # Importing the nixos-hardware module for Raspberry Pi 3B
   nixos-hardware.nixosModules.raspberry-pi-3
@@ -21,82 +21,103 @@
     };
   }
 
-  facter-modules.nixosModules.facter
-#  {
-#    config.facter.reportPath = ./facter.json;
-#  }
+  # Enable ZFS support and configure it
+  {
+    boot.supportedFilesystems = [ "zfs" ];
+    services.zfs = {
+      # Enables ZFS trimming, informing the storage devices about unused blocks that can be reclaimed
+      trim.enable = true;
+      trim.interval = "weekly";
+      # Enables automatic scrubbing of ZFS pools.
+      # Read more here: https://blogs.oracle.com/oracle-systems/post/disk-scrub-why-and-when
+      autoScrub.enable = true;
+      autoScrub.interval = "monthly";
+    };
+  }
 
   disko.nixosModules.disko
   {
     disko.devices.disk = {
-      main = {
+      sdcard = {
         type = "disk";
-        device = "/dev/disk/by-diskseq/1";
+        device = "/dev/mmcblk0";
         content = {
           type = "gpt";
           partitions = {
-            ESP = {
+
+            FIRMWARE = {
+              label = "FIRMWARE";
               priority = 1;
-              name = "ESP";
-              start = "1M";
-              end = "128M";
-              type = "EF00";
+              type = "0700";
+              attributes = [
+                0 # Required partition
+              ];
+              size = "1024M";
+              content = {
+                type = "filesystem";
+                format = "vfat";
+                mountpoint = "/boot/firmware";
+                mountOptions = [
+                  "noatime"
+                  "noauto"
+                  "x-systemd.automount"
+                  "x-systemd.idle-timeout=1min"
+                ];
+              };
+            };
+
+            # EFI System Partition (ESP)
+            ESP = {
+              label = "ESP";
+              priority = 2;
+              type = "EF00";  # EFI System Partition (ESP)
+              attributes = [
+                2 # Legacy BIOS Bootable, for U-Boot to find extlinux config
+              ];
+              size = "1024M";
               content = {
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
-                mountOptions = [ "umask=0077" ];
+                mountOptions = [
+                  "noatime"
+                  "noauto"
+                  "x-systemd.automount"
+                  "x-systemd.idle-timeout=1min"
+                  "umask=0077"
+                ];
               };
             };
-            root = {
-              size = "100%";
-              content = {
-                type = "btrfs";
-                extraArgs = [ "-f" ]; # Override existing partition
-                # Subvolumes must set a mountpoint in order to be mounted,
-                # unless their parent is mounted
-                subvolumes = {
-                  # Subvolume name is different from mountpoint
-                  "/rootfs" = {
-                    mountpoint = "/";
-                  };
-                  # Subvolume name is the same as the mountpoint
-                  "/home" = {
-                    mountOptions = [ "compress=zstd" ];
-                    mountpoint = "/home";
-                  };
-                  # Sub(sub)volume doesn't need a mountpoint as its parent is mounted
-                  "/home/user" = { };
-                  # Parent is not mounted so the mountpoint must be set
-                  "/nix" = {
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                    mountpoint = "/nix";
-                  };
-                  # This subvolume will be created but not mounted
-                  "/test" = { };
-                  # Subvolume for the swapfile
-                  "/swap" = {
-                    mountpoint = "/.swapvol";
-                    swap = {
-                      swapfile.size = "20M";
-                      swapfile2.size = "20M";
-                      swapfile2.path = "rel-path";
-                    };
-                  };
+
+            # Configures ZFS pool
+            zpool = {
+              # Root Pool
+              rpool = {
+                type = "zpool";
+                # zpool properties
+                options = {
+                  ashift = 12;
+                  autotrim = "on";
                 };
 
-                mountpoint = "/partition-root";
-                swap = {
-                  swapfile = {
-                    size = "20M";
-                  };
-                  swapfile1 = {
-                    size = "20M";
-                  };
+                # zfs properties
+                # For reference and background: https://jrs-s.net/2018/08/17/zfs-tuning-cheat-sheet/
+                rootFsOptions = {
+                  compression = "lz4";
+                  atime = "off";
+                  xattr = "sa";
+                  acltype = "posixacl";
+                  # https://rubenerd.com/forgetting-to-set-utf-normalisation-on-a-zfs-pool/
+                  normalization = "formD";
+                  dnodesize = "auto";
+                  mountpoint = "none";
+                  camount = "off";
                 };
+
+
+                postCreateHook = let
+                  poolName = "rpool";
+                in "zfs list -t snapshot -H -o name | grep -E '^${poolName}@blank$' || zfs snapshot ${poolName}@blank";
               };
             };
           };
