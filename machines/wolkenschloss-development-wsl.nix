@@ -1,5 +1,4 @@
 {
-  self,
   nixos-wsl,
   home-manager,
   ...

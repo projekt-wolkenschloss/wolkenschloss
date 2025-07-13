@@ -43,7 +43,7 @@ extra-experimental-features = flakes nix-command
 
 To detect dead code locally: `nix run github:astro/deadnix`
 
-To format the code: `nix fmt .`
+To format the code: `nix fmt`
 
 ## Nix Knowledge
 

@@ -1,6 +1,6 @@
 # Creates and configures the wolke user.
 # It is the default user of the Wolkenschloss hosts.
-{ pkgs, home-manager, ... }:
+{ pkgs, ... }:
 let
   username = "wolke";
   userEmail = "wolke@invalid.domain";

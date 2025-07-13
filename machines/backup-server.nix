@@ -1,7 +1,5 @@
 {
-  self,
   nixpkgs,
-  disko,
   nixos-hardware,
   ...
 }:
@@ -17,7 +15,7 @@
     # Explicitly setting nix path for nixos-anywhere deployment
     # See https://github.com/nix-community/nixos-anywhere/blob/main/docs/howtos/nix-path.md
     nix.nixPath = [ "nixpkgs=${nixpkgs}" ];
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with nixpkgs; [
       nano
     ];
 

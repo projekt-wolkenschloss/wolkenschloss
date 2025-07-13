@@ -24,11 +24,7 @@
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
       nixos-wsl,
-      nixos-hardware,
-      home-manager,
-      disko,
       treefmt-nix,
       #      facter-modules,
       ...
