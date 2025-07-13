@@ -15,6 +15,7 @@
       url = "github:nix-community/disko/latest";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix.url = "github:numtide/treefmt-nix";
     #    facter-modules.url = "github:numtide/nixos-facter-modules";
     #    wolkenschloss.url = "github:projekt-wolkenschloss/wolkenschloss/feature/a-simple-backup-server";
   };
@@ -28,16 +29,38 @@
       nixos-hardware,
       home-manager,
       disko,
+      treefmt-nix,
       #      facter-modules,
       ...
     }:
+    let
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      # Iterate over each system and apply nixpkgs.legacyPackages to the passed function
+      eachSystem =
+        fun: nixpkgs.lib.genAttrs supportedSystems (system: fun nixpkgs.legacyPackages.${system});
+
+      # Eval the treefmt modules from ./treefmt.nix
+      treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
+    in
     {
-      formatter = {
-        x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-        aarch64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-        i686-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-        x86_64-darwin = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-      };
+      # for `nix fmt`
+      formatter = eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
+      # for `nix flake check`
+      checks = eachSystem (pkgs: {
+        formatting = treefmtEval.${pkgs.system}.config.build.check self;
+      });
+
+      #      formatter = {
+      #        x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+      #        aarch64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+      #        i686-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+      #        x86_64-darwin = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+      #      };
+
       nixosConfigurations = {
         wolkenschloss-development-wsl = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
