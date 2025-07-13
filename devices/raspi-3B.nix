@@ -2,7 +2,11 @@
 
 {
   boot = {
-    initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
+    initrd.availableKernelModules = [
+      "xhci_pci"
+      "usbhid"
+      "usb_storage"
+    ];
   };
   hardware.enableRedistributableFirmware = true;
 

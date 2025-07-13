@@ -15,7 +15,7 @@
       url = "github:nix-community/disko/latest";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-#    facter-modules.url = "github:numtide/nixos-facter-modules";
+    #    facter-modules.url = "github:numtide/nixos-facter-modules";
     #    wolkenschloss.url = "github:projekt-wolkenschloss/wolkenschloss/feature/a-simple-backup-server";
   };
 
@@ -28,7 +28,7 @@
       nixos-hardware,
       home-manager,
       disko,
-#      facter-modules,
+      #      facter-modules,
       ...
     }:
     {

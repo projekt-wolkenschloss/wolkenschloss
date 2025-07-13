@@ -1,4 +1,10 @@
-{ self, nixpkgs, disko, nixos-hardware, ... }:
+{
+  self,
+  nixpkgs,
+  disko,
+  nixos-hardware,
+  ...
+}:
 [
   # Importing the nixos-hardware module for Raspberry Pi 3B
   nixos-hardware.nixosModules.raspberry-pi-3
