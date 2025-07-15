@@ -35,7 +35,7 @@
         "aarch64-linux"
       ];
 
-      # Iterate over each system and apply nixpkgs.legacyPackages to the passed function
+      # Iterate over each system and pass nixpkgs.legacyPackages to the passed function
       eachSystem =
         fun: nixpkgs.lib.genAttrs supportedSystems (system: fun nixpkgs.legacyPackages.${system});
 
@@ -50,13 +50,6 @@
         formatting = treefmtEval.${pkgs.system}.config.build.check self;
       });
 
-      #      formatter = {
-      #        x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-      #        aarch64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-      #        i686-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-      #        x86_64-darwin = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
-      #      };
-
       nixosConfigurations = {
         wolkenschloss-development-wsl = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
@@ -67,14 +60,7 @@
         nixos-testing-1 = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
           system = "x86_64-linux";
-          modules = [
-            nixos-wsl.nixosModules.default
-            {
-              system.stateVersion = "24.11";
-              wsl.enable = true;
-            }
-            ./machines/nixos-testing-1.nix
-          ];
+          modules = (import ./machines/nixos-testing) inputs;
         };
 
         backup-server = nixpkgs.lib.nixosSystem {
