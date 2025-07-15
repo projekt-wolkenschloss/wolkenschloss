@@ -1,6 +1,7 @@
 {
   nixpkgs,
   nixos-hardware,
+  disko,
   ...
 }:
 [
@@ -25,6 +26,7 @@
     };
   }
 
+  disko.nixosModules.disko
   ./partitioning-disko.nix
 
   # Enable ZFS support and configure it
