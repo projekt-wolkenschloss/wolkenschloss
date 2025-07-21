@@ -25,6 +25,13 @@ Read more about our [philosophy](docs/philosophy.md).
 
 Read more about our [goals](docs/goals.md).
 
+## Project Status and Reality Check
+
+The project is currently in an infant stage. We are still working on the initial architecture and design, and we have not yet released a stable version. Though our vision is grand, we are starting small with the most important feature: backups.
+
+Also, the project is currently only a hobby of the maintainers. With we, I mean myself, Max, currently.
+I am using the genereal "we" to refer to the project as a whole and to be inclusive of future contributors.
+
 ## Contributing
 
 We welcome contributions from the community! Whether you're a developer, designer, or just passionate about self-hosting, there are many ways to get involved:
@@ -32,7 +39,6 @@ We welcome contributions from the community! Whether you're a developer, designe
 - **Code Contributions**: Help us improve the codebase by fixing bugs or adding new features.
 - **Testing**: Test new features and provide feedback to ensure a smooth user experience.
 - **Documentation**: Improve our documentation to make it more accessible and user-friendly.
-- **Community Support**: Join our community forums to help others and share your knowledge.
 - **Feedback**: Share your thoughts on the project and suggest improvements.
   
 For more details, check out our [contributing guide](CONTRIBUTING.md).
