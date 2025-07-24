@@ -11,6 +11,8 @@
 
   # Basic system configuration
   system.stateVersion = "25.05";
+
+  nixpkgs.config.allowUnfree = true;
   
   # Essential packages
   environment.systemPackages = with pkgs; [
