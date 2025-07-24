@@ -314,3 +314,22 @@ When adding new features:
 - [nixos-generators](https://github.com/nix-community/nixos-generators)
 - [nixos-anywhere](https://github.com/nix-community/nixos-anywhere)
 - [Main Documentation](../docs/custom-installer-iso.md)
+
+
+
+# Build installers
+nix build ./installer#installer-custom
+nix build ./installer#installer-secure
+
+# Or from main project
+nix build .#installer-custom
+
+# Development
+cd installer
+nix develop
+./scripts/build-installer.sh --test custom
+
+# With environment variables
+SSH_KEYS="$(cat ~/.ssh/id_ed25519.pub)" \
+ROOT_PASSWORD_HASH="$(mkpasswd -m sha-512 'secure-password')" \
+nix build .#installer-secure
