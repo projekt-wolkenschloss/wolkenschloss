@@ -1,7 +1,10 @@
-description: "Small disk scenario to test space constraints"
+description: "Small disk scenario to test space constraints with a single disk"
 vm:
   memory: 2048
   cores: 2
+  static_ip: "192.168.1.100"
+  gateway: "192.168.1.1"
+  netmask: "24"
   disks:
     - size: "16"
       type: "scsi"
@@ -25,7 +28,3 @@ expected_partitions:
   - "/dev/sda1 (ESP - 512M)"
   - "/dev/sda2 (bpool - 2G)"
   - "/dev/sda3 (rpool - remaining)"
-
-notes:
-  - "This scenario tests behavior with limited disk space"
-  - "May require reduced Docker volume size or removal"

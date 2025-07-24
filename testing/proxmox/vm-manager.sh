@@ -24,6 +24,7 @@ fi
 : "${PROXMOX_STORAGE:?PROXMOX_STORAGE must be set in .env}"
 : "${PROXMOX_ISO_STORAGE:?PROXMOX_ISO_STORAGE must be set in .env}"
 : "${VM_ROOT_PASSWORD:?VM_ROOT_PASSWORD must be set in .env}"
+: "${NETWORK_RANGE:?NETWORK_RANGE must be set in .env}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -33,20 +34,20 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 log() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${GREEN}[INFO]${NC} $1" >&2
 }
 
 warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" >&2
 }
 
 error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 debug() {
     if [[ "${DEBUG:-}" == "1" ]]; then
-        echo -e "${BLUE}[DEBUG]${NC} $1"
+        echo -e "${BLUE}[DEBUG]${NC} $1" >&2
     fi
 }
 
@@ -136,31 +137,83 @@ get_next_vmid() {
     echo $vmid
 }
 
+get_vm_mac_address() {
+    local vmid="$1"
+    
+    # Get MAC address from VM config
+    local mac
+    mac=$(pve_exec "qm config $vmid" | grep "^net0:" | sed -n 's/.*virtio=\([^,]*\).*/\1/p')
+    
+    if [[ -z "$mac" ]]; then
+        error "Could not find MAC address for VM $vmid"
+        return 1
+    fi
+    
+    echo "$mac"
+}
+
+parse_ip_from_arp_table() {
+    local mac="$1"
+    
+    # Check ARP table for the given MAC address
+    local ip
+    ip=$(pve_exec "arp -a" | grep -i "$mac" | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | head -1)
+
+    if [[ -n "$ip" && "$ip" != "127.0.0.1" ]]; then
+        echo "$ip"
+        return 0
+    fi
+
+    error "Could not find IP for MAC: $mac"
+    return 1
+}
+
 get_vm_ip() {
     local vmid="$1"
-    local timeout="${2:-60}"
-    local count=0
     
-    log "Waiting for VM $vmid to get IP address..."
+    # Get MAC address from VM config
+    local mac
+    mac=$(get_vm_mac_address "$vmid")
     
-    while [[ $count -lt $timeout ]]; do
-        local ip
-        ip=$(pve_exec "qm guest cmd $vmid network-get-interfaces 2>/dev/null" | \
-             grep -o '"ip-address":"[0-9.]*"' | \
-             grep -v '127.0.0.1' | \
-             head -1 | \
-             cut -d'"' -f4 2>/dev/null || true)
+    log "Looking for VM $vmid with MAC: $mac"
+    
+    # First try: Check existing ARP table
+    local ip
+    ip=$(parse_ip_from_arp_table "$mac")
+    if pve_exec "ping -c 1 -W 2 '$ip' >/dev/null 2>&1"; then
+        echo "$ip"
+        return 0
+    fi
+    
+    ip=$(pve_exec "ip neighbour | grep -i '$mac' | awk '{print \$1}' | head -1")
+    if pve_exec "ping -c 1 -W 2 '$ip' >/dev/null 2>&1"; then
+        log "Found IP in neighbour table: $ip"
+        echo "$ip"
+        return 0
+    fi
+
+    log "MAC not found in ARP table, performing network scan to populate ARP..."
+    
+    # Determine network range (adjust as needed for your environment)
+    local network="$NETWORK_RANGE"
+    
+    # Use nmap to ping scan the network (this populates the ARP table)
+    pve_exec "nmap -sn $network >/dev/null 2>&1" || {
+        warn "nmap scan failed, trying broadcast ping instead"
+        # Extract broadcast address from network range (e.g., 192.168.1.0/24 -> 192.168.1.255)
+        local broadcast
+        broadcast=$(echo "$network" | sed 's/\.0\/24$/.255/' | sed 's/\.0\/16$/.255.255/' | sed 's/\.0\.0\/8$/.255.255.255/')
+        pve_exec "ping -c 3 -b $broadcast >/dev/null 2>&1" || true
+    }
+    
+    # Now check ARP table again immediately after scan
+    ip=$(parse_ip_from_arp_table "$mac")
+    if pve_exec "ping -c 1 -W 2 '$ip' >/dev/null 2>&1"; then
+        echo "$ip"
+        return 0
+    fi
         
-        if [[ -n "$ip" && "$ip" != "127.0.0.1" ]]; then
-            echo "$ip"
-            return 0
-        fi
-        
-        sleep 2
-        ((count += 2))
-    done
-    
-    error "VM $vmid did not get IP address within ${timeout}s"
+    error "Could not find IP for VM $vmid (MAC: $mac) in ARP table"
     return 1
 }
 
@@ -319,7 +372,7 @@ ssh_vm() {
     fi
     
     log "Use password: $password"
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "root@$vm_ip"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "root@$vm_ip%eth0"
 }
 
 destroy_vm() {
@@ -348,7 +401,7 @@ run_headless_install() {
     
     # Get VM IP
     local vm_ip
-    vm_ip=$(get_vm_ip "$vmid" 120)  # Wait up to 2 minutes for IP
+    vm_ip=$(get_vm_ip "$vmid")  # Wait up to 2 minutes for IP
     if [[ -z "$vm_ip" ]]; then
         error "Could not get IP for VM $vmid"
         return 1
@@ -372,12 +425,13 @@ run_headless_install() {
     
     if [[ -f "${PROJECT_ROOT}/testing/scenarios/${scenario}-disko.nix" ]]; then
         disko_config="./testing/scenarios/${scenario}-disko.nix"
-        case "$scenario" in
-            "raid-mirror") flake_config="nixos-testing-mirror" ;;
-            "raidz") flake_config="nixos-testing-raidz" ;;
-            "small-disk") flake_config="nixos-testing-small" ;;
-        esac
     fi
+    
+    case "$scenario" in
+        "raid-mirror") flake_config="nixos-testing-mirror" ;;
+        "raidz") flake_config="nixos-testing-raidz" ;;
+        "small-disk") flake_config="nixos-testing-small" ;;
+    esac
     
     # Create installation script
     local install_script="/tmp/nixos-install-${vmid}.sh"
@@ -457,7 +511,7 @@ run_test_cycle() {
         sleep 60
         
         log "VM $vmid is ready for manual testing"
-        log "Connect via Proxmox console or SSH to: root@$(get_vm_ip "$vmid" 30 || echo "IP_NOT_AVAILABLE")"
+        log "Connect via Proxmox console or SSH to: root@$(get_vm_ip "$vmid" || echo "IP_NOT_AVAILABLE")"
         log "Root password: $VM_ROOT_PASSWORD"
     fi
     
