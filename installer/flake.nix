@@ -39,33 +39,15 @@
       forEachSystem = fun: nixpkgs.lib.genAttrs supportedSystems (system: fun system);
     in
     {
-      # Create ISOs
-      packages = forEachSystem (_system: {
-        # Basic installer with minimal auth
-        installer = generateIso _system [
+      # Create ISOs for each supported system
+      packages = forEachSystem (system: {
+        # Basic installer with SSH and password auth
+        installer = generateIso system [
           ./modules/base.nix
           ./modules/auth.nix
         ];
         
-        default = self.packages.${_system}.installer;
+        default = self.packages.${system}.installer;
       });
-      # Create ISOs
-      # packages."x86_64-linux" = {
-      #   installer = generateIso "x86_64-linux" [
-      #     ./modules/base.nix
-      #     ./modules/auth.nix
-      #   ];
-      # };
-
-      # NixOS configurations for integration
-      nixosConfigurations = {
-        installer = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            ./modules/base.nix
-            ./modules/auth.nix
-          ];
-        };
-      };
     };
 }
