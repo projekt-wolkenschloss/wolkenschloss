@@ -217,10 +217,61 @@ get_vm_ip() {
     return 1
 }
 
+upload_iso_to_proxmox() {
+    local iso_path="$1"
+    
+    if [[ ! -f "$iso_path" ]]; then
+        error "ISO file not found: $iso_path"
+        return 1
+    fi
+    
+    local iso_filename
+    iso_filename=$(basename "$iso_path")
+
+    local existing_iso
+    existing_iso=$(pve_exec "pvesm list $PROXMOX_ISO_STORAGE --content iso" | grep "$iso_filename" | head -1 | awk '{print $1}' || true)
+        
+    if [[ -n "$existing_iso" ]]; then
+        log "ISO already exists in Proxmox storage: $existing_iso"
+        return 0
+    fi
+    
+    log "Uploading ISO to Proxmox storage: $iso_filename"
+
+    pve_copy "$iso_path" "/tmp/$iso_filename"
+    pve_exec "cp /tmp/$iso_filename /var/lib/vz/template/iso/$iso_filename"
+    pve_exec "rm -f /tmp/$iso_filename"
+    
+    log "ISO uploaded successfully: /var/lib/vz/template/iso/$iso_filename"
+}
+
 create_vm() {
     local scenario="$1"
+    local iso_path="${2:-}"
     local scenario_file="${TESTING_ROOT}/scenarios/${scenario}.yaml"
-    
+
+    local nixos_iso
+    if [[ -n "$iso_path" && -f "$iso_path" ]]; then
+        log "Using provided ISO: $iso_path"
+            
+        upload_iso_to_proxmox "$iso_path"
+        
+        # Extract ISO filename
+        local iso_filename
+        iso_filename=$(basename "$iso_path")
+        
+        # Set the ISO path in Proxmox format
+        nixos_iso="$PROXMOX_ISO_STORAGE:iso/$iso_filename"
+    else
+        log "Searching for default NixOS ISO in Proxmox storage..."
+        nixos_iso=$(get_nixos_iso)
+    fi
+
+    if [[ -z "$nixos_iso" ]]; then
+        error "No NixOS ISO $nixos_iso found."
+        exit 1
+    fi
+
     if [[ ! -f "$scenario_file" ]]; then
         error "Scenario file not found: $scenario_file"
         exit 1
@@ -270,15 +321,8 @@ create_vm() {
         pve_exec "qm set $vmid \
             --${disk_id} ${PROXMOX_STORAGE}:${disk_size},iothread=1"
     done
-    
-    # Set CD-ROM to NixOS ISO
-    local nixos_iso
-    nixos_iso=$(get_nixos_iso)
-    if [[ -n "$nixos_iso" ]]; then
-        pve_exec "qm set $vmid --ide2 ${nixos_iso},media=cdrom"
-    else
-        warn "No NixOS ISO found. Please upload one manually."
-    fi
+
+    pve_exec "qm set $vmid --ide2 ${nixos_iso},media=cdrom"
     
     log "VM $vmid created successfully"
     echo "VMID: $vmid"
@@ -309,12 +353,7 @@ download_nixos_iso() {
     local temp_iso="/tmp/${iso_name}"
     curl -L "$download_url" -o "$temp_iso"
     
-    # Upload to Proxmox storage
-    log "Uploading ISO to Proxmox storage..."
-    pve_copy "$temp_iso" "/tmp/${iso_name}"
-    pve_exec "pvesm upload $PROXMOX_ISO_STORAGE /tmp/${iso_name} $iso_name"
-    pve_exec "rm -f /tmp/${iso_name}"
-    
+    upload_iso_to_proxmox "$temp_iso"
     # Cleanup
     rm -f "$temp_iso"
     
@@ -546,11 +585,11 @@ main() {
     
     case "$command" in
         create)
-            if [[ $# -ne 1 ]]; then
-                error "Usage: $0 create SCENARIO"
+            if [[ $# -lt 1 ]]; then
+                error "Usage: $0 create SCENARIO [iso-path]"
                 exit 1
             fi
-            create_vm "$1"
+            create_vm "$1" "$2"
             ;;
         start)
             if [[ $# -ne 1 ]]; then
