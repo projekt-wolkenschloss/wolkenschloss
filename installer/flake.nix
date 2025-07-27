@@ -19,7 +19,6 @@
     let
       supportedSystems = [
         "x86_64-linux"
-        "aarch64-linux"
       ];
       installerName = "wolkenschloss-installer";
 
@@ -41,8 +40,7 @@
     {
       # Create ISOs for each supported system
       packages = forEachSystem (system: {
-        # Basic installer with SSH and password auth
-        installer = generateIso system [
+        iso = generateIso system [
           ./modules/base.nix
           ./modules/auth.nix
         ];

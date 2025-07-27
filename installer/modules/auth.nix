@@ -2,12 +2,12 @@
 
 let
   # Environment variables with fallbacks
-  sshKeys = lib.splitString "," (builtins.getEnv "SSH_KEYS"); # Default for development
+  sshKeys = lib.splitString "," (builtins.getEnv "SSH_KEYS");
   nixosPasswordHash =
     if (builtins.getEnv "NIXOS_PASSWORD_HASH") != "" then
       builtins.getEnv "NIXOS_PASSWORD_HASH"
     else
-      "$6$rounds=4096$example$hash"; # Default for development
+      "$y$j9T$/sYOC0Od9Yf1OARxHgUV2.$JtFLVQ.CoUkw4mqYmLY1TFgq2C0IVvUBO278Fh2cY.3"; # test
 in
 {
   # SSH configuration

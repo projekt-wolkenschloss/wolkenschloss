@@ -7,11 +7,7 @@ usage() {
     cat << EOF
 Usage: $0 [OPTIONS] [SYSTEM]
 
-Build Wolkenschloss installer ISO for specified architecture.
-
-SYSTEM:
-    x86_64-linux    Build for x86_64 architecture (default)
-    aarch64-linux   Build for ARM64 architecture
+Build Wolkenschloss installer ISOs.
 
 OPTIONS:
     -h, --help      Show this help
@@ -25,8 +21,7 @@ Environment Variables:
 
 Examples:
     $0                                    # Build for x86_64-linux
-    $0 aarch64-linux                      # Build for ARM64
-    $0 x86_64-linux --clean               # Clean build cache first
+    $0 --clean               # Clean build cache first
     $0 -k "ssh-rsa AAAA...,ssh-ed25519..." # With SSH keys
     $0 -p "\$6\$rounds=4096\$salt\$hash"   # With password hash
 EOF
@@ -62,7 +57,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         *)
-            echo "❌ Unknown option: $1"
+            echo "Unknown option: $1"
             usage
             exit 1
             ;;
@@ -89,9 +84,8 @@ if [[ "$CLEAN" == "true" ]]; then
     rm -rf result*
 fi
 
-# Build the installer for the specified system
-echo "Building installer for $SYSTEM..."
-nix build ".#packages.$SYSTEM.installer" --print-build-logs
+echo "Building iso..."
+nix build ".#packages.$SYSTEM.iso" --print-build-logs
 
 # Find and display the built ISO
 ISO_FILE=$(find -L result -name "*.iso" | head -n1)
