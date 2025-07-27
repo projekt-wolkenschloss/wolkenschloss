@@ -1,16 +1,13 @@
-{ config, pkgs, lib, ... }:
+{ lib, ... }:
 
 let
   # Environment variables with fallbacks
-  sshKeys = lib.splitString "," (builtins.getEnv "SSH_KEYS");
-  rootPasswordHash = 
-    if (builtins.getEnv "ROOT_PASSWORD_HASH") != "" 
-    then builtins.getEnv "ROOT_PASSWORD_HASH"
-    else "$6$rounds=4096$example$hash"; # Default for development
-  nixosPasswordHash = 
-    if (builtins.getEnv "NIXOS_PASSWORD_HASH") != "" 
-    then builtins.getEnv "NIXOS_PASSWORD_HASH" 
-    else "$6$rounds=4096$example$hash"; # Default for development
+  sshKeys = lib.splitString "," (builtins.getEnv "SSH_KEYS"); # Default for development
+  nixosPasswordHash =
+    if (builtins.getEnv "NIXOS_PASSWORD_HASH") != "" then
+      builtins.getEnv "NIXOS_PASSWORD_HASH"
+    else
+      "$6$rounds=4096$example$hash"; # Default for development
 in
 {
   # SSH configuration
@@ -32,7 +29,10 @@ in
       nixos = {
         isNormalUser = true;
         hashedPassword = nixosPasswordHash;
-        extraGroups = [ "wheel" "networkmanager" ];
+        extraGroups = [
+          "wheel"
+          "networkmanager"
+        ];
         openssh.authorizedKeys.keys = lib.filter (key: key != "") sshKeys;
       };
     };

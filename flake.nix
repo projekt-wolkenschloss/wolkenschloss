@@ -24,7 +24,6 @@
     inputs@{
       self,
       nixpkgs,
-      nixos-wsl,
       treefmt-nix,
       #      facter-modules,
       ...

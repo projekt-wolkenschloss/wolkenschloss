@@ -1,5 +1,5 @@
 # Configures a testing vm
-{ nixpkgs, disko, ... }:
+{ disko, ... }:
 [
   {
     # Source: nixos options
@@ -24,18 +24,18 @@
       useDHCP = true;
       # Required by zfs
       hostId = "4a967f46";
-#      interfaces = {
-#        eth0 = {
-#          useDHCP = true;
-#          ipv4.addresses = [
-#            {
-#                address = "192.168.178.210";
-#                prefixLength = 24;
-#            }
-#          ];
-#          ipv6.addresses = [ ];
-#        };
-#      };
+      #      interfaces = {
+      #        eth0 = {
+      #          useDHCP = true;
+      #          ipv4.addresses = [
+      #            {
+      #                address = "192.168.178.210";
+      #                prefixLength = 24;
+      #            }
+      #          ];
+      #          ipv6.addresses = [ ];
+      #        };
+      #      };
     };
 
     # Source: nixos options

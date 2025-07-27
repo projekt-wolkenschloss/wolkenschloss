@@ -1,4 +1,9 @@
-{ config, pkgs, lib, installerName, ... }:
+{
+  config,
+  pkgs,
+  installerName,
+  ...
+}:
 
 {
   # ISO configuration
@@ -13,7 +18,7 @@
   system.stateVersion = "25.05";
 
   nixpkgs.config.allowUnfree = true;
-  
+
   # Essential packages
   environment.systemPackages = with pkgs; [
     curl
@@ -40,7 +45,7 @@
 
   users.motd = ''
     Welcome to Wolkenschloss Custom Installer!
-    
+
     This system is ready for automated deployment.
   '';
 }

@@ -16,17 +16,17 @@
         imports = [
           ../machines/nixos-testing/default.nix
         ];
-        
+
         # Override hostname for mirror testing
         networking.hostName = "nixos-testing-mirror";
-        
+
         # Different host ID for ZFS
         networking.hostId = "4a967f47";
       }
     ];
   };
 
-  # Test configuration for RAIDZ scenario  
+  # Test configuration for RAIDZ scenario
   nixos-testing-raidz = inputs.nixpkgs.lib.nixosSystem {
     specialArgs = { inherit inputs; };
     system = "x86_64-linux";
@@ -37,7 +37,7 @@
         imports = [
           ../machines/nixos-testing/default.nix
         ];
-        
+
         networking.hostName = "nixos-testing-raidz";
         networking.hostId = "4a967f48";
       }
@@ -69,10 +69,10 @@
         # Static IP configuration for small disk scenario
         networking = {
           hostName = "nixos-testing-small";
-          useDHCP = false;  # Disable DHCP for static IP
+          useDHCP = false; # Disable DHCP for static IP
           # Required by zfs
           hostId = "4a967f49";
-          
+
           # Configure static IP
           interfaces = {
             eth0 = {
@@ -86,10 +86,13 @@
               ipv6.addresses = [ ];
             };
           };
-          
+
           # Set default gateway
           defaultGateway = "192.168.1.1";
-          nameservers = [ "8.8.8.8" "8.8.4.4" ];
+          nameservers = [
+            "8.8.8.8"
+            "8.8.4.4"
+          ];
         };
 
         # Disable Docker for small disk scenario to save space

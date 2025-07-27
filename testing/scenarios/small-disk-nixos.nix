@@ -1,5 +1,5 @@
 # NixOS configuration for small disk testing scenario with static IP
-{ nixpkgs, disko, ... }:
+{ disko, ... }:
 [
   {
     # Source: nixos options
@@ -21,10 +21,10 @@
     # Source: nixos options
     networking = {
       hostName = "nixos-testing-small";
-      useDHCP = false;  # Disable DHCP for static IP
+      useDHCP = false; # Disable DHCP for static IP
       # Required by zfs
       hostId = "4a967f47";
-      
+
       # Configure static IP
       interfaces = {
         eth0 = {
@@ -38,10 +38,13 @@
           ipv6.addresses = [ ];
         };
       };
-      
+
       # Set default gateway
       defaultGateway = "192.168.1.1";
-      nameservers = [ "8.8.8.8" "8.8.4.4" ];
+      nameservers = [
+        "8.8.8.8"
+        "8.8.4.4"
+      ];
     };
 
     # Source: nixos options
