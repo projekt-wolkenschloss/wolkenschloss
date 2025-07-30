@@ -2,6 +2,7 @@
   config,
   pkgs,
   installerName,
+  hostName,
   ...
 }:
 
@@ -18,6 +19,10 @@
   system.stateVersion = "25.05";
 
   nixpkgs.config.allowUnfree = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  services.xserver.xkb.layout = "de"; # Set default keyboard layout
+  console.keyMap = "de"; # Set console keyboard layout
 
   # Essential packages
   environment.systemPackages = with pkgs; [
@@ -31,12 +36,22 @@
 
   # Network configuration
   networking = {
+    hostName = "${hostName}";
     usePredictableInterfaceNames = true;
     dhcpcd.enable = true;
     wireless.enable = false; # Disable if not needed
-    useDHCP = false;
-    interfaces = {
-      # Auto-configure all interfaces with DHCP
+    useDHCP = true;
+  };
+
+  # Enables mDNS for local network service discovery
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;  # Enable resolution of .local domains
+    openFirewall = true; # Allow mDNS traffic through the firewall
+    publish = {
+      enable = true;
+      addresses = true;
+      workstation = true;
     };
   };
 

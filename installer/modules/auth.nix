@@ -1,22 +1,18 @@
-{ lib, ... }:
-
-let
-  # Environment variables with fallbacks
-  sshKeys = lib.splitString "," (builtins.getEnv "SSH_KEYS");
-  nixosPasswordHash =
-    if (builtins.getEnv "NIXOS_PASSWORD_HASH") != "" then
-      builtins.getEnv "NIXOS_PASSWORD_HASH"
-    else
-      "$y$j9T$/sYOC0Od9Yf1OARxHgUV2.$JtFLVQ.CoUkw4mqYmLY1TFgq2C0IVvUBO278Fh2cY.3"; # test
-in
+{ 
+  lib, 
+  sshKeys,
+  nixosPasswordHash,
+  ...
+}:
 {
   # SSH configuration
   services.openssh = {
     enable = true;
     openFirewall = true;
     settings = {
-      PermitRootLogin = "yes";
-      PasswordAuthentication = true;
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
       PubkeyAuthentication = true;
       MaxAuthTries = 10;
     };
