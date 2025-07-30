@@ -3,7 +3,7 @@
 tmp/
 *.bkp
 *.log
-/installer/result
+/installer/iso
 
 ### Mise
 **/mise.local.toml
