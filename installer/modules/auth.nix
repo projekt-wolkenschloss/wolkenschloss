@@ -1,10 +1,22 @@
-{ 
-  lib, 
-  sshKeys,
+{
+  lib,
+  sshKey,
   nixosPasswordHash,
   ...
 }:
+
 {
+  assertions = [
+    {
+      assertion = builtins.stringLength sshKey > 0;
+      message = "sshKey parameter cannot be empty";
+    }
+    {
+      assertion = builtins.stringLength nixosPasswordHash > 0;
+      message = "nixosPasswordHash cannot be empty";
+    }
+  ];
+
   # SSH configuration
   services.openssh = {
     enable = true;
@@ -29,7 +41,9 @@
           "wheel"
           "networkmanager"
         ];
-        openssh.authorizedKeys.keys = lib.filter (key: key != "") sshKeys;
+        openssh.authorizedKeys.keys = [ 
+          sshKey
+       ];
       };
     };
   };

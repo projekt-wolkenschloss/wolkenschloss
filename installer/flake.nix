@@ -21,12 +21,14 @@
         "x86_64-linux"
       ];
       installerName = "wolkenschloss-installer";
-      vmHostName = if (builtins.getEnv "VM_HOST_NAME") != "" then
-        builtins.getEnv "VM_HOST_NAME"
-      else
-        "wolkenschloss-nixos-test-vm";
+      vmHostName =
+        if (builtins.getEnv "VM_HOST_NAME") != "" then
+          builtins.getEnv "VM_HOST_NAME"
+        else
+          "wolkenschloss-nixos-test-vm";
 
-      sshKeys = nixpkgs.lib.splitString "," (builtins.getEnv "VM_SSH_KEYS");
+      sshKey = 
+        assert (builtins.stringLength (builtins.getEnv "VM_SSH_KEY") > 0); builtins.getEnv "VM_SSH_KEY";
       nixosPasswordHash =
         if (builtins.getEnv "VM_NIXOS_PASSWORD_HASH") != "" then
           builtins.getEnv "VM_NIXOS_PASSWORD_HASH"
@@ -42,7 +44,7 @@
           modules = modules;
           specialArgs = {
             inherit (self.inputs) nixpkgs;
-            inherit installerName sshKeys nixosPasswordHash;
+            inherit installerName sshKey nixosPasswordHash;
             hostName = vmHostName;
           };
         };
@@ -56,7 +58,7 @@
           ./modules/base.nix
           ./modules/auth.nix
         ];
-        
+
         default = self.packages.${system}.installer;
       });
     };

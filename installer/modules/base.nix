@@ -19,7 +19,10 @@
   system.stateVersion = "25.05";
 
   nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   services.xserver.xkb.layout = "de"; # Set default keyboard layout
   console.keyMap = "de"; # Set console keyboard layout
@@ -46,7 +49,7 @@
   # Enables mDNS for local network service discovery
   services.avahi = {
     enable = true;
-    nssmdns4 = true;  # Enable resolution of .local domains
+    nssmdns4 = true; # Enable resolution of .local domains
     openFirewall = true; # Allow mDNS traffic through the firewall
     publish = {
       enable = true;
