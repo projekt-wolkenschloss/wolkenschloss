@@ -6,7 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TESTING_ROOT="${PROJECT_ROOT}/testing"
 
 # Default configuration
@@ -23,8 +23,7 @@ fi
 
 : "${PROXMOX_STORAGE:?PROXMOX_STORAGE must be set in .env}"
 : "${PROXMOX_ISO_STORAGE:?PROXMOX_ISO_STORAGE must be set in .env}"
-: "${VM_ROOT_PASSWORD:?VM_ROOT_PASSWORD must be set in .env}"
-: "${NETWORK_RANGE:?NETWORK_RANGE must be set in .env}"
+: "${VM_NIXOS_USER_PASSWORD:?VM_NIXOS_USER_PASSWORD must be set in .env}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -168,6 +167,7 @@ parse_ip_from_arp_table() {
     return 1
 }
 
+# TODO simplify and use mDNS
 get_vm_ip() {
     local vmid="$1"
     
@@ -332,7 +332,6 @@ create_vm() {
     # Store VM metadata
     echo "scenario=$scenario" > "/tmp/nixos-test-vm-${vmid}.meta"
     echo "vm_name=$vm_name" >> "/tmp/nixos-test-vm-${vmid}.meta"
-    echo "root_password=$VM_ROOT_PASSWORD" >> "/tmp/nixos-test-vm-${vmid}.meta"
 }
 
 get_nixos_iso() {
@@ -404,14 +403,10 @@ ssh_vm() {
     log "Connecting to VM $vmid at $vm_ip"
     
     # Get root password from metadata
-    local meta_file="/tmp/nixos-test-vm-${vmid}.meta"
-    local password="$VM_ROOT_PASSWORD"
-    if [[ -f "$meta_file" ]]; then
-        password=$(grep "^root_password=" "$meta_file" | cut -d'=' -f2 || echo "$VM_ROOT_PASSWORD")
-    fi
+    local password="$VM_NIXOS_USER_PASSWORD"
     
     log "Use password: $password"
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "root@$vm_ip%eth0"
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "nixos@$vm_ip%eth0"
 }
 
 destroy_vm() {
@@ -450,10 +445,9 @@ run_headless_install() {
     
     # Get metadata
     local meta_file="/tmp/nixos-test-vm-${vmid}.meta"
-    local password="$VM_ROOT_PASSWORD"
+    local password="$VM_NIXOS_USER_PASSWORD"
     if [[ -f "$meta_file" ]]; then
         scenario=$(grep "^scenario=" "$meta_file" | cut -d'=' -f2 || echo "$scenario")
-        password=$(grep "^root_password=" "$meta_file" | cut -d'=' -f2 || echo "$VM_ROOT_PASSWORD")
     fi
     
     log "Installing scenario: $scenario"
@@ -543,7 +537,7 @@ run_test_cycle() {
         run_headless_install "$vmid" "$scenario"
         
         log "Installation completed. VM $vmid is ready for testing."
-        log "SSH: root@$(get_vm_ip "$vmid") (password: $VM_ROOT_PASSWORD)"
+        log "SSH: nixos@$(get_vm_ip "$vmid") (password: $VM_NIXOS_USER_PASSWORD)"
     else
         # Wait for VM to be ready
         log "Waiting for VM to boot (60 seconds)..."
@@ -551,7 +545,7 @@ run_test_cycle() {
         
         log "VM $vmid is ready for manual testing"
         log "Connect via Proxmox console or SSH to: root@$(get_vm_ip "$vmid" || echo "IP_NOT_AVAILABLE")"
-        log "Root password: $VM_ROOT_PASSWORD"
+        log "Nixos user password: $VM_NIXOS_USER_PASSWORD"
     fi
     
     log ""
