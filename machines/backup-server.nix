@@ -8,7 +8,7 @@
   # Importing the nixos-hardware module for Raspberry Pi 3B
   nixos-hardware.nixosModules.raspberry-pi-3
   # Importing the Raspberry Pi 3B specific configuration
-  ../devices/raspi-3B.nix
+  ../hardware/raspi-3B.nix
   {
     system.stateVersion = "25.05";
     networking.hostName = "sturmfeste";

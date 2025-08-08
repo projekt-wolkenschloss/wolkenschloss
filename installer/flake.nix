@@ -27,8 +27,9 @@
         else
           "wolkenschloss-nixos-test-vm";
 
-      sshKey = 
-        assert (builtins.stringLength (builtins.getEnv "VM_SSH_KEY") > 0); builtins.getEnv "VM_SSH_KEY";
+      sshKey =
+        assert (builtins.stringLength (builtins.getEnv "VM_SSH_KEY") > 0);
+        builtins.getEnv "VM_SSH_KEY";
       nixosPasswordHash =
         if (builtins.getEnv "VM_NIXOS_PASSWORD_HASH") != "" then
           builtins.getEnv "VM_NIXOS_PASSWORD_HASH"

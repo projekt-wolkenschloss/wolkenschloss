@@ -1,7 +1,6 @@
-{ disko, ... }:
-let
-  bootDeviceId = "/dev/disk/by-id/scsi-0QEMU_QUEMU_HARDDISK_drive-scsi0";
-in
+# Disko config for a single storage device with ZFS root and boot pools.
+{ disko, bootDeviceId, ... }:
+
 {
   disko.devices = {
     disk = {
@@ -15,7 +14,7 @@ in
             esp = {
               label = "ESP";
               priority = 2;
-              type = "EF00"; # EFI System Partition (ESP)
+              type = "EF00";
               size = "1G";
               content = {
                 type = "filesystem";

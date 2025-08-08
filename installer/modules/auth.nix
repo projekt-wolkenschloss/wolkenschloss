@@ -1,5 +1,4 @@
 {
-  lib,
   sshKey,
   nixosPasswordHash,
   ...
@@ -41,9 +40,9 @@
           "wheel"
           "networkmanager"
         ];
-        openssh.authorizedKeys.keys = [ 
+        openssh.authorizedKeys.keys = [
           sshKey
-       ];
+        ];
       };
     };
   };

@@ -40,6 +40,8 @@
 
       # Eval the treefmt modules from ./treefmt.nix
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
+
+      integrationTests = (import ./testing) inputs;
     in
     {
       # for `nix fmt`
@@ -49,24 +51,18 @@
         formatting = treefmtEval.${pkgs.system}.config.build.check self;
       });
 
-      nixosConfigurations = {
+      nixosConfigurations = integrationTests // {
         wolkenschloss-development-wsl = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
           system = "x86_64-linux";
           modules = (import ./machines/wolkenschloss-development-wsl.nix) inputs;
         };
 
-        nixos-testing-1 = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs; };
-          system = "x86_64-linux";
-          modules = (import ./machines/nixos-testing) inputs;
-        };
-
-        backup-server = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs; };
-          system = "x86_64-linux";
-          modules = (import ./machines/backup-server.nix) inputs;
-        };
+        # backup-server = nixpkgs.lib.nixosSystem {
+        #   specialArgs = { inherit inputs; };
+        #   system = "x86_64-linux";
+        #   modules = (import ./machines/backup-server.nix) inputs;
+        # };
       };
     };
 }

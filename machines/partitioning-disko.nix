@@ -13,9 +13,9 @@
               label = "FIRMWARE";
               priority = 1;
               type = "0700";
-              attributes = [
-                0 # Required partition
-              ];
+              # attributes = [
+              #   0 # Required partition
+              # ];
               size = "1G";
               content = {
                 type = "filesystem";
@@ -35,9 +35,9 @@
               label = "ESP";
               priority = 2;
               type = "EF00"; # EFI System Partition (ESP)
-              attributes = [
-                2 # Legacy BIOS Bootable, for U-Boot to find extlinux config
-              ];
+              # attributes = [
+              #   2 # Legacy BIOS Bootable, for U-Boot to find extlinux config
+              # ];
               size = "1G";
               content = {
                 type = "filesystem";
