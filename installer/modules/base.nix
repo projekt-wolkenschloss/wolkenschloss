@@ -45,6 +45,19 @@
     wireless.enable = false; # Disable if not needed
     useDHCP = true;
   };
+  
+  # SSH configuration
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PubkeyAuthentication = true;
+      MaxAuthTries = 10;
+    };
+  };
 
   # Enables mDNS for local network discovery
   services.avahi = {

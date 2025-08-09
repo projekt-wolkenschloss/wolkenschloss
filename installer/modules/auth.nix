@@ -16,19 +16,6 @@
     }
   ];
 
-  # SSH configuration
-  services.openssh = {
-    enable = true;
-    openFirewall = true;
-    settings = {
-      PermitRootLogin = "no";
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PubkeyAuthentication = true;
-      MaxAuthTries = 10;
-    };
-  };
-
   # User configuration
   users = {
     mutableUsers = false;
