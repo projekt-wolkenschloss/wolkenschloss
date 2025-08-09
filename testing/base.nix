@@ -29,9 +29,17 @@
   virtualisation.docker.storageDriver = "overlay2";
 
   # Source: nixos options
+  # SSH configuration
   services.openssh = {
     enable = true;
     openFirewall = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PubkeyAuthentication = true;
+      MaxAuthTries = 10;
+    };
   };
 
   # Enable ZFS support and configure it

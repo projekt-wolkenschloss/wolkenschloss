@@ -42,7 +42,7 @@
 
             # Root ZFS pool
             rpool = {
-              size = "-1M";
+              size = "99%";
               content = {
                 type = "zfs";
                 # Name of the ZFS pool
