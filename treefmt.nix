@@ -4,4 +4,6 @@
 
   programs.nixfmt.enable = true;
   programs.deadnix.enable = true;
+  programs.shellcheck.enable = true;
+  programs.shfmt.enable = true;
 }
