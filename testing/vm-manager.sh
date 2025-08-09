@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# VM Manager for NixOS Testing in Proxmox
-# This script helps create, manage, and test different hardware configurations
+# VM Manager for Proxmox
+# This script helps to manage test different hardware configurations
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 TESTING_ROOT="${PROJECT_ROOT}/testing"
+DEFAULT_VM_MDNS_NAME="wolkenschloss-nixos-test-vm"
 
 # Default configuration
 # Load environment variables from .env
@@ -24,6 +25,7 @@ fi
 : "${PROXMOX_STORAGE:?PROXMOX_STORAGE must be set in .env}"
 : "${PROXMOX_ISO_STORAGE:?PROXMOX_ISO_STORAGE must be set in .env}"
 : "${VM_NIXOS_USER_PASSWORD:?VM_NIXOS_USER_PASSWORD must be set in .env}"
+: "${VM_SSH_KEY:?VM_SSH_KEY must be set in .env}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -55,16 +57,13 @@ usage() {
 Usage: $0 [OPTIONS] COMMAND
 
 Commands:
-  create SCENARIO     Create VM from scenario
+  create SCENARIO ISO-PATH    Create VM from scenario
   start VMID          Start VM
   stop VMID           Stop VM  
   destroy VMID        Destroy VM
   list               List test VMs
   scenarios          List scenarios
-  iso                Download NixOS ISO
-  test SCENARIO      Run test cycle
   ssh VMID           SSH to VM
-  install VMID       Run headless install
 
 Options:
   --help              Show help
@@ -81,7 +80,7 @@ test_proxmox_connection() {
 }
 
 check_dependencies() {
-    local deps=("curl" "yq" "ssh" "scp" "grep")
+    local deps=("curl" "yq" "ssh" "scp" "grep" "sshpass" "avahi-resolve")
     
     # Validate required environment variables
     if [[ -z "${PROXMOX_HOST}" ]]; then
@@ -167,10 +166,28 @@ parse_ip_from_arp_table() {
     return 1
 }
 
-# TODO simplify and use mDNS
+resolve_ipv4_via_mDNS() {
+    local hostname="$1"
+    local ip=""
+    
+    ip=$(avahi-resolve -4 -n "${hostname}.local" 2>/dev/null | awk '{print $2}' | head -1)
+    if [[ -n "$ip" && "$ip" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        echo "$ip"
+        return 0
+    fi
+    return 1
+}
+
+# TODO simplify
 get_vm_ip() {
     local vmid="$1"
-    
+
+    ip=$(resolve_ipv4_via_mDNS "$DEFAULT_VM_MDNS_NAME")
+    if [[ -n "$ip" ]]; then
+        echo "$ip"
+        return 0
+    fi
+
     # Get MAC address from VM config
     local mac
     mac=$(get_vm_mac_address "$vmid")
@@ -180,7 +197,8 @@ get_vm_ip() {
     # First try: Check existing ARP table
     local ip
     ip=$(parse_ip_from_arp_table "$mac")
-    if pve_exec "ping -c 1 -W 2 '$ip' >/dev/null 2>&1"; then
+    if ! [[ -n "$ip" ]] && pve_exec "ping -c 1 -W 2 '$ip' >/dev/null 2>&1"; then
+        log "Found IP in ARP table: $ip"
         echo "$ip"
         return 0
     fi
@@ -247,25 +265,24 @@ upload_iso_to_proxmox() {
 
 create_vm() {
     local scenario="$1"
-    local iso_path="${2:-}"
+    local iso_path="$2"
     local scenario_file="${TESTING_ROOT}/scenarios/${scenario}.yaml"
 
     local nixos_iso
-    if [[ -n "$iso_path" && -f "$iso_path" ]]; then
-        log "Using provided ISO: $iso_path"
-            
-        upload_iso_to_proxmox "$iso_path"
-        
-        # Extract ISO filename
-        local iso_filename
-        iso_filename=$(basename "$iso_path")
-        
-        # Set the ISO path in Proxmox format
-        nixos_iso="$PROXMOX_ISO_STORAGE:iso/$iso_filename"
-    else
-        log "Searching for default NixOS ISO in Proxmox storage..."
-        nixos_iso=$(get_nixos_iso)
+    if ! [[ -n "$iso_path" && -f "$iso_path" ]]; then
+        error "Invalid ISO path: $iso_path"
+        exit 1
     fi
+
+    log "Using provided ISO: $iso_path"
+    upload_iso_to_proxmox "$iso_path"
+    
+    # Extract ISO filename
+    local iso_filename
+    iso_filename=$(basename "$iso_path")
+    
+    # Set the ISO path in Proxmox format
+    nixos_iso="$PROXMOX_ISO_STORAGE:iso/$iso_filename"
 
     if [[ -z "$nixos_iso" ]]; then
         error "No NixOS ISO $nixos_iso found."
@@ -341,24 +358,6 @@ get_nixos_iso() {
     echo "$isos"
 }
 
-download_nixos_iso() {
-    local version="${1:-25.05}"
-    local iso_name="nixos-minimal-${version}-x86_64-linux.iso"
-    local download_url="https://channels.nixos.org/nixos-${version}/latest-nixos-minimal-x86_64-linux.iso"
-    
-    log "Downloading NixOS ${version} ISO..."
-    
-    # Download to temporary location
-    local temp_iso="/tmp/${iso_name}"
-    curl -L "$download_url" -o "$temp_iso"
-    
-    upload_iso_to_proxmox "$temp_iso"
-    # Cleanup
-    rm -f "$temp_iso"
-    
-    log "NixOS ISO downloaded and uploaded successfully"
-}
-
 list_vms() {
     log "NixOS Test VMs:"
     pve_exec "qm list" | grep -E "nixos-test-" || echo "No test VMs found"
@@ -402,11 +401,16 @@ ssh_vm() {
     
     log "Connecting to VM $vmid at $vm_ip"
     
-    # Get root password from metadata
+    if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$VM_SSH_KEY" "nixos@$vm_ip"; then
+        return 0
+    fi
+    log "Connecting with ssh key $VM_SSH_KEY failed"
+
     local password="$VM_NIXOS_USER_PASSWORD"
-    
-    log "Use password: $password"
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "nixos@$vm_ip%eth0"
+    if ! sshpass -p "$password" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "nixos@$vm_ip"; then
+        warn "Failed to log into vm $vmid via password"
+        exit 1
+    fi
 }
 
 destroy_vm() {
@@ -426,132 +430,6 @@ destroy_vm() {
         log "Operation cancelled"
     fi
 }
-
-run_headless_install() {
-    local vmid="$1"
-    local scenario="${2:-single-disk}"
-    
-    log "Running headless NixOS installation on VM $vmid"
-    
-    # Get VM IP
-    local vm_ip
-    vm_ip=$(get_vm_ip "$vmid")  # Wait up to 2 minutes for IP
-    if [[ -z "$vm_ip" ]]; then
-        error "Could not get IP for VM $vmid"
-        return 1
-    fi
-    
-    log "VM $vmid is available at $vm_ip"
-    
-    # Get metadata
-    local meta_file="/tmp/nixos-test-vm-${vmid}.meta"
-    local password="$VM_NIXOS_USER_PASSWORD"
-    if [[ -f "$meta_file" ]]; then
-        scenario=$(grep "^scenario=" "$meta_file" | cut -d'=' -f2 || echo "$scenario")
-    fi
-    
-    log "Installing scenario: $scenario"
-    
-    # Determine disko configuration
-    local disko_config="./machines/nixos-testing/partitioning-disko.nix"
-    local flake_config="nixos-testing-1"
-    
-    if [[ -f "${PROJECT_ROOT}/testing/scenarios/${scenario}-disko.nix" ]]; then
-        disko_config="./testing/scenarios/${scenario}-disko.nix"
-    fi
-    
-    case "$scenario" in
-        "raid-mirror") flake_config="nixos-testing-mirror" ;;
-        "raidz") flake_config="nixos-testing-raidz" ;;
-        "small-disk") flake_config="nixos-testing-small" ;;
-    esac
-    
-    # Create installation script
-    local install_script="/tmp/nixos-install-${vmid}.sh"
-    cat > "$install_script" << EOF
-#!/bin/bash
-set -euo pipefail
-
-# Set root password for SSH access
-echo "root:${password}" | chpasswd
-
-# Enable SSH
-systemctl start sshd
-systemctl enable sshd
-
-# Clone repository
-cd /tmp
-git clone https://github.com/projekt-wolkenschloss/wolkenschloss.git
-cd wolkenschloss
-
-# Run disko partitioning
-echo "Running disko partitioning..."
-nix --experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode disko ${disko_config}
-
-# Install NixOS
-echo "Installing NixOS..."
-nixos-install --flake .#${flake_config} --no-root-password
-
-echo "Installation completed successfully!"
-EOF
-    
-    # Copy and run installation script on VM
-    log "Copying installation script to VM..."
-    # Copy via Proxmox host (since we're always remote)
-    pve_copy "$install_script" "/tmp/nixos-install-${vmid}.sh"
-    echo "$PROXMOX_SUDO_PASSWORD" | ssh "${PROXMOX_USER}@${PROXMOX_HOST}" "sudo -S scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /tmp/nixos-install-${vmid}.sh root@${vm_ip}:/tmp/"
-    pve_exec "rm -f /tmp/nixos-install-${vmid}.sh"
-    
-    log "Running installation on VM..."
-    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "root@$vm_ip" "chmod +x /tmp/nixos-install-${vmid}.sh && /tmp/nixos-install-${vmid}.sh"
-    
-    # Cleanup
-    rm -f "$install_script"
-    
-    log "Headless installation completed successfully!"
-    log "VM $vmid is now ready. SSH: root@$vm_ip (password: $password)"
-}
-
-run_test_cycle() {
-    local scenario="$1"
-    local headless="${2:-false}"
-    
-    log "Running complete test cycle for scenario: $scenario"
-    
-    # Create VM
-    local vm_output
-    vm_output=$(create_vm "$scenario")
-    local vmid
-    vmid=$(echo "$vm_output" | grep "VMID:" | cut -d' ' -f2)
-    
-    if [[ -z "$vmid" ]]; then
-        error "Failed to get VM ID"
-        return 1
-    fi
-    
-    # Start VM
-    start_vm "$vmid"
-    
-    if [[ "$headless" == "true" ]]; then
-        log "Running headless installation..."
-        run_headless_install "$vmid" "$scenario"
-        
-        log "Installation completed. VM $vmid is ready for testing."
-        log "SSH: nixos@$(get_vm_ip "$vmid") (password: $VM_NIXOS_USER_PASSWORD)"
-    else
-        # Wait for VM to be ready
-        log "Waiting for VM to boot (60 seconds)..."
-        sleep 60
-        
-        log "VM $vmid is ready for manual testing"
-        log "Connect via Proxmox console or SSH to: root@$(get_vm_ip "$vmid" || echo "IP_NOT_AVAILABLE")"
-        log "Nixos user password: $VM_NIXOS_USER_PASSWORD"
-    fi
-    
-    log ""
-    log "When done testing, run: $0 destroy $vmid"
-}
-
 
 main() {    
     # Parse options
@@ -579,8 +457,8 @@ main() {
     
     case "$command" in
         create)
-            if [[ $# -lt 1 ]]; then
-                error "Usage: $0 create SCENARIO [iso-path]"
+            if [[ $# -lt 2 ]]; then
+                error "Usage: $0 create SCENARIO ISO-PATH"
                 exit 1
             fi
             create_vm "$1" "$2"
@@ -606,13 +484,6 @@ main() {
             fi
             ssh_vm "$1"
             ;;
-        install)
-            if [[ $# -ne 1 ]]; then
-                error "Usage: $0 install VMID"
-                exit 1
-            fi
-            run_headless_install "$1"
-            ;;
         destroy)
             if [[ $# -ne 1 ]]; then
                 error "Usage: $0 destroy VMID"
@@ -625,24 +496,6 @@ main() {
             ;;
         scenarios)
             list_scenarios
-            ;;
-        iso)
-            if [[ $# -eq 0 ]]; then
-                download_nixos_iso
-            else
-                download_nixos_iso "$1"
-            fi
-            ;;
-        test)
-            if [[ $# -lt 1 || $# -gt 2 ]]; then
-                error "Usage: $0 test SCENARIO [--headless]"
-                exit 1
-            fi
-            local headless=false
-            if [[ "${2:-}" == "--headless" ]]; then
-                headless=true
-            fi
-            run_test_cycle "$1" "$headless"
             ;;
         *)
             error "Unknown command: $command"
