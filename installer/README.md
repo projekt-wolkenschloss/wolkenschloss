@@ -1,20 +1,20 @@
 # Wolkenschloss Custom Installer
 
-This directory contains the configurations and tools for creating custom NixOS installer ISOs with pre-configured authentication for Wolkenschloss deployment and testing.
+NixOS has no default passwords for a sudo enabled account, so you need physical access to set the initial passwords.
+This directory contains the configurations and tools for creating custom NixOS installer ISOs with pre-configured authentication for automated and remote deployment and testing.
 
-## Overview
+It provides pre-configured:
 
-The custom installer solves the fundamental problem of needing physical access to set passwords for automated deployment. It provides:
-
-- Pre-configured root and nixos user passwords
+- nixos user with password
 - SSH key authentication
 - Enabled SSH daemon by default
-- Network configuration (DHCP/static)
+- DHCP network config
+- mDNS for local network device discovery
 
 ## Quick Start
 
 ```bash
-./installer/build-iso.sh
+./build-iso.sh
 ```
 
 For more, see `./build-iso.sh --help`.

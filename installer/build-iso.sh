@@ -14,12 +14,8 @@ OPTIONS:
     -c, --clean     Clean build cache first
     -k, --ssh-key  Comma-separated SSH public key
     -K, --ssh-key-file
-                    File containing SSH public keys (overrides -k)
+                    File containing SSH public key (overrides -k)
     -p, --password  Password hash for nixos user
-
-Environment Variables:
-    SSH_KEYS            Comma-separated SSH public keys
-    NIXOS_PASSWORD_HASH Password hash for nixos user
 
 Examples:
     $0                                    # Build for x86_64-linux

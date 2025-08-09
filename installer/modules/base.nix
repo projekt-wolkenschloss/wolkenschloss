@@ -46,7 +46,7 @@
     useDHCP = true;
   };
 
-  # Enables mDNS for local network service discovery
+  # Enables mDNS for local network discovery
   services.avahi = {
     enable = true;
     nssmdns4 = true; # Enable resolution of .local domains
@@ -64,6 +64,6 @@
   users.motd = ''
     Welcome to Wolkenschloss Custom Installer!
 
-    This system is ready for automated deployment.
+    This system is ready for remote and automated deployment.
   '';
 }
