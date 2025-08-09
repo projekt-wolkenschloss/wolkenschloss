@@ -1,4 +1,4 @@
-# Deployment 
+# Deployment
 
 The aim of Wolkenschloss first-time deployment is to allow an easy and unattended installation
 onto a VM or physical hardware.
@@ -7,11 +7,14 @@ onto a VM or physical hardware.
 
 The user should have two options:
 
-A. Creating a bootable drive with a pre-configured Wolkenschloss image via another computer
+A. Creating a bootable drive with a pre-configured Wolkenschloss image via another computer that then installs itself once booted
 
-B. Creating a bootable drive with a standard NixOS image and then installing Wolkenschloss
+B. Creating a bootable drive with a standard NixOS image and then installing Wolkenschloss manually
 
 ### Option A: Booting and installing Wolkenschloss
+
+The basic idea is to use any computer and an sd card or usb drive to create a bootable image.
+The removable media is then used to boot the target machine and install Wolkenschloss automatically.
 
 #### How it works
 
@@ -39,11 +42,3 @@ Prerequisites:
 6. Deploy wolkenschloss with
 `nix run github:nix-community/nixos-anywhere -- --generate-hardware-config nixos-facter ./facter.json --flake '.#myconfig' --target-host nixos@<ip-address>`
 
-
-## Deployment on Bare Metal with Operating System
-
-We do not support this yet.
-
-## Deployment on a VM
-
-We do not support this yet.
