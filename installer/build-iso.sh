@@ -84,6 +84,7 @@ if [[ "$CLEAN" == "true" ]]; then
     echo "Cleaning build cache..."
     rm -rf "$SCRIPT_DIR/result"
     rm -rf "$SCRIPT_DIR/iso"
+    nix-collect-garbage
 fi
 
 echo "Building iso..."
@@ -95,10 +96,11 @@ if [[ -n "$ISO_FILE" && -f "$ISO_FILE" ]]; then
     mkdir -p "$SCRIPT_DIR/iso"
     NEW_FILE_NAME="$(date +"%Y-%m-%dT%H-%M-%S")-wolkenschloss-nixos-installer.iso"
     sudo mv "$ISO_FILE" "$SCRIPT_DIR/iso/$NEW_FILE_NAME" || true
-    rm -rf result*
+    rm -rf result
     echo "Built:" 
     ls -lah "$SCRIPT_DIR/iso/$NEW_FILE_NAME"
 else
     echo "Could not find ISO file in result directory"
+    rm -r result
     exit 1
 fi

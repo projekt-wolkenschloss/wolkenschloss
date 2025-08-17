@@ -7,6 +7,10 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    disko = {
+      url = "github:nix-community/disko/v1.11.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -14,6 +18,7 @@
       self,
       nixpkgs,
       nixos-generators,
+      disko,
       ...
     }:
     let
@@ -47,6 +52,7 @@
             inherit (self.inputs) nixpkgs;
             inherit installerName sshKey nixosPasswordHash;
             hostName = vmHostName;
+            keyboardLayoutShortCode = "de";
           };
         };
 
@@ -58,6 +64,7 @@
         iso = generateIso system [
           ./modules/base.nix
           ./modules/auth.nix
+          disko.nixosModules.disko
         ];
 
         default = self.packages.${system}.installer;

@@ -1,59 +1,42 @@
 # Disko config for a single storage device with ZFS root and boot pools.
-{ disko, bootDeviceId, ... }:
+{ disko, disks ? [ "/dev/sda" ], ... }:
 
 {
-  disko.devices = {
-    disk = {
-      bootDisk = {
-        type = "disk";
-        device = "${bootDeviceId}";
-        content = {
-          type = "gpt";
-          partitions = {
-            # EFI System Partition (ESP)
-            esp = {
-              label = "ESP";
-              priority = 2;
-              type = "EF00";
-              size = "1G";
-              content = {
-                type = "filesystem";
-                format = "vfat";
-                mountpoint = "/boot/efis/${bootDeviceId}-part2";
-                mountOptions = [
-                  "noatime"
-                  "noauto"
-                  "x-systemd.automount"
-                  "x-systemd.idle-timeout=1min"
-                  "umask=0077"
-                ];
+  disko = {
+    extraRootModules = [ "zfs" ];
+    devices = {
+      disk = {
+        bootDisk = {
+          type = "disk";
+          device = builtins.elemAt disks 0;
+          content = {
+            type = "gpt";
+            partitions = {
+              # EFI System Partition (ESP)
+              esp = {
+                label = "ESP";
+                # sgdisk-specific short code
+                type = "EF00";
+                size = "1G";
+                content = {
+                  type = "filesystem";
+                  format = "vfat";
+                  mountpoint = "/boot";
+                  mountOptions = [
+                    "defaults"
+                  ];
+                };
               };
-            };
 
-            # Boot ZFS pool
-            bpool = {
-              size = "4G";
-              content = {
-                type = "zfs";
-                # Name of the ZFS pool
-                pool = "bpool";
+              # Root ZFS pool
+              rpool = {
+                size = "100%";
+                content = {
+                  type = "zfs";
+                  # Name of the ZFS pool
+                  pool = "rpool";
+                };
               };
-            };
-
-            # Root ZFS pool
-            rpool = {
-              size = "99%";
-              content = {
-                type = "zfs";
-                # Name of the ZFS pool
-                pool = "rpool";
-              };
-            };
-
-            # BIOS boot partition
-            bios = {
-              size = "100%";
-              type = "EF02";
             };
           };
         };
@@ -65,7 +48,7 @@
       let
         # General zfs pool properties
         commonPoolOptions = {
-          ashift = 12;
+          ashift = "12";
           autotrim = "on";
         };
 
@@ -91,40 +74,11 @@
         };
       in
       {
-        # Boot pool
-        bpool = {
-          type = "zpool";
-          options = commonPoolOptions // {
-            # Enables grub2 support for ZFS
-            compatibility = "grub2";
-          };
-          rootFsOptions = commonRootFsOptions;
-          mountpoint = "/boot";
-          datasets = {
-            nixos = {
-              type = "zfs_fs";
-              options.mountpoint = "none";
-            };
-
-            "nixos/boot" = {
-              type = "zfs_fs";
-              # Use traditional fstab
-              options.mountpoint = "legacy";
-              mountpoint = "/boot";
-            };
-          };
-        };
-
         # Root pool
         rpool = {
           type = "zpool";
-
-          # General zfs pool properties
           options = commonPoolOptions;
-
-          # zfs properties for the top level dataset
           rootFsOptions = commonRootFsOptions;
-
           mountpoint = "/";
 
           datasets = {
@@ -142,26 +96,6 @@
               postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^rpool/nixos/root@empty$' || zfs snapshot rpool/nixos/root@empty";
             };
 
-            "nixos/var" = {
-              type = "zfs_fs";
-              options.mountpoint = "none";
-            };
-
-            # Application and system logs
-            "nixos/var/log" = {
-              type = "zfs_fs";
-              # Use traditional fstab
-              options.mountpoint = "legacy";
-              mountpoint = "/var/log";
-            };
-
-            "nixos/var/lib" = {
-              type = "zfs_fs";
-              # Use traditional fstab
-              options.mountpoint = "legacy";
-              mountpoint = "/var/lib";
-            };
-
             # Default NixOS configuration files
             "nixos/config" = {
               type = "zfs_fs";
@@ -177,22 +111,30 @@
               mountpoint = "/nix";
             };
 
-            home = {
+            "nixos/home" = {
               type = "zfs_fs";
               options.mountpoint = "legacy";
               mountpoint = "/home";
             };
+            
+            # A dedicated safe directory for everthing we cant think of, yet
+            "nixos/persist" = {
+              type = "zfs_fs";
+              options.mountpoint = "legacy";
+              mountpoint = "/persist";
+            };
 
-            # Container storage
-            docker = {
-              # Block device for ext4 fs
-              type = "zfs_volume";
-              size = "50G";
-              content = {
-                type = "filesystem";
-                format = "ext4";
-                mountpoint = "/var/lib/containers";
-              };
+            "nixos/var" = {
+              type = "zfs_fs";
+              options.mountpoint = "none";
+            };
+
+            # Application and system logs
+            "nixos/var/log" = {
+              type = "zfs_fs";
+              # Use traditional fstab
+              options.mountpoint = "legacy";
+              mountpoint = "/var/log";
             };
           };
         };

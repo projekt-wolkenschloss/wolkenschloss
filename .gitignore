@@ -4,9 +4,9 @@ tmp/
 *.bkp
 *.log
 /installer/iso
+/installer/result
 
-### Mise
-**/mise.local.toml
+.local/
 
 ### Python
 *.venv/

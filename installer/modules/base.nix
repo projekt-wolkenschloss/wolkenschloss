@@ -1,13 +1,15 @@
 {
   config,
   pkgs,
-  installerName,
-  hostName,
+  installerName ? "wolkenschloss-installer",
+  hostName ? "wolkenschloss-nixos-test-vm",
+  keyboardLayoutShortCode ? "de",
   ...
 }:
 
 {
   # ISO configuration
+  # TODO needed?
   isoImage = {
     isoName = "${installerName}-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}.iso";
     volumeID = "WOLKENSCHLOSS";
@@ -24,8 +26,8 @@
     "flakes"
   ];
 
-  services.xserver.xkb.layout = "de"; # Set default keyboard layout
-  console.keyMap = "de"; # Set console keyboard layout
+  services.xserver.xkb.layout = "${keyboardLayoutShortCode}"; # Set default keyboard layout
+  console.keyMap = "${keyboardLayoutShortCode}"; # Set console keyboard layout
 
   # Essential packages
   environment.systemPackages = with pkgs; [
@@ -35,6 +37,7 @@
     tmux
     vim
     wget
+    zfs
   ];
 
   # Network configuration
