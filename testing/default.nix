@@ -1,11 +1,16 @@
-{ nixpkgs, disko, ... }:
+{ 
+  nixpkgs, 
+  lib, 
+  disko, 
+  ... 
+}:
 
-let
-  diskId = "/dev/sda";
-  
+let  
   sshKey =
-    assert (builtins.stringLength (builtins.getEnv "VM_SSH_KEY") > 0);
-    builtins.getEnv "VM_SSH_KEY";
+    if (builtins.getEnv "VM_SSH_KEY") != "" then
+      builtins.getEnv "VM_SSH_KEY"
+    else 
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPfdblJ4KYOY8aLSnPigAhinhAnUyXxMLsTbGmmg15YC wolkenschloss-developer-key-for-test-vms";
   nixosPasswordHash =
     if (builtins.getEnv "VM_NIXOS_PASSWORD_HASH") != "" then
       builtins.getEnv "VM_NIXOS_PASSWORD_HASH"
@@ -20,7 +25,10 @@ in
       disko.nixosModules.disko
       (import ../hardware/partitioning-layouts/single-storage-device.nix {
         inherit disko;
-        bootDeviceId = diskId;
+        inherit lib;
+      })
+      ( import ../hardware/partitioning-layouts/zfs-root-rollback.nix {
+        inherit nixpkgs;
       })
       ./base.nix
       ./auth.nix

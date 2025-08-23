@@ -48,7 +48,7 @@
     wireless.enable = false; # Disable if not needed
     useDHCP = true;
   };
-  
+
   # SSH configuration
   services.openssh = {
     enable = true;

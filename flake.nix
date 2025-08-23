@@ -24,6 +24,7 @@
     inputs@{
       self,
       nixpkgs,
+      disko,
       treefmt-nix,
       #      facter-modules,
       ...
@@ -41,7 +42,12 @@
       # Eval the treefmt modules from ./treefmt.nix
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
 
-      integrationTests = (import ./testing) inputs;
+      integrationTests = (
+        import ./testing {
+          inherit nixpkgs disko;
+          lib = nixpkgs.lib;
+        }
+      );
     in
     {
       # for `nix fmt`
