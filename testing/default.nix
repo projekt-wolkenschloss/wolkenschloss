@@ -16,6 +16,7 @@ let
       builtins.getEnv "VM_NIXOS_PASSWORD_HASH"
     else
       "$y$j9T$/sYOC0Od9Yf1OARxHgUV2.$JtFLVQ.CoUkw4mqYmLY1TFgq2C0IVvUBO278Fh2cY.3"; # test
+  bootDevice = "/dev/sda";
 in
 {
   wlknslos-single-storage-device = nixpkgs.lib.nixosSystem {
@@ -26,6 +27,7 @@ in
       (import ../hardware/partitioning-layouts/single-storage-device.nix {
         inherit disko;
         inherit lib;
+        disks = [ bootDevice ];
       })
       ( import ../hardware/partitioning-layouts/zfs-root-rollback.nix {
         inherit nixpkgs;
@@ -33,5 +35,8 @@ in
       ./base.nix
       ./auth.nix
     ];
+    specialArgs = {
+      inherit sshKey nixosPasswordHash bootDevice;
+    };
   };
 }

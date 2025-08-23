@@ -1,4 +1,7 @@
-{ ... }:
+{ 
+  bootDevice ? "/dev/sda",
+  ... 
+}:
 
 {
   # Source: nixos options
@@ -15,6 +18,10 @@
     kernelParams = [
       "zfs_force=1"
     ];
+    loader.grub = {
+      zfsSupport = true;
+      device = bootDevice;
+    };
   };
 
   # Source: nixos options
