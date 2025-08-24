@@ -4,6 +4,7 @@
   lib,
   disks ? [ "/dev/sda" ],
   rootZfsDatasetSnapshot ? "rpool/nixos/root@empty",
+  ...
 }:
 
 {

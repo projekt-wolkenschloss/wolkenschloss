@@ -31,10 +31,13 @@
           builtins.getEnv "VM_HOST_NAME"
         else
           "wolkenschloss-nixos-test-vm";
-
+        
       sshKey =
-        assert (builtins.stringLength (builtins.getEnv "VM_SSH_KEY") > 0);
-        builtins.getEnv "VM_SSH_KEY";
+        if (builtins.getEnv "VM_SSH_KEY") != "" then
+          assert (builtins.stringLength (builtins.getEnv "VM_SSH_KEY") > 0);
+          builtins.getEnv "VM_SSH_KEY"
+        else 
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPfdblJ4KYOY8aLSnPigAhinhAnUyXxMLsTbGmmg15YC wolkenschloss-developer-key-for-test-vms";
       nixosPasswordHash =
         if (builtins.getEnv "VM_NIXOS_PASSWORD_HASH") != "" then
           builtins.getEnv "VM_NIXOS_PASSWORD_HASH"
@@ -49,7 +52,7 @@
           format = "iso";
           modules = modules;
           specialArgs = {
-            inherit (self.inputs) nixpkgs;
+            nixpkgs = nixpkgs.legacyPackages.${system};
             inherit installerName sshKey nixosPasswordHash;
             hostName = vmHostName;
             keyboardLayoutShortCode = "de";
@@ -64,10 +67,11 @@
         iso = generateIso system [
           ./modules/base.nix
           ./modules/auth.nix
+          ./modules/zfs.nix
           disko.nixosModules.disko
         ];
 
-        default = self.packages.${system}.installer;
+        default = self.packages.${system}.iso;
       });
     };
 }
