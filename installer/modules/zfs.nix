@@ -22,4 +22,22 @@ let
 in
 {
   boot.kernelPackages = latestKernelPackage;
+
+  # Enable ZFS support
+  boot.supportedFilesystems = [ "zfs" ];
+  
+  # Ensure ZFS modules are loaded in initrd
+  boot.initrd.availableKernelModules = [ "zfs" ];
+  boot.initrd.kernelModules = [ "zfs" ];
+  
+  # Include ZFS in the system
+  environment.systemPackages = with nixpkgs; [
+    zfs
+    zfstools
+  ];
+
+  boot.kernelModules = [ "zfs" ];
+
+  # ZFS requires networking.hostId to be set
+  networking.hostId = "4a967f47";
 }

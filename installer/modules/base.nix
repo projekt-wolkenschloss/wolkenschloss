@@ -20,7 +20,6 @@
   # Basic system configuration
   system.stateVersion = "25.05";
 
-  nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
@@ -37,7 +36,6 @@
     tmux
     vim
     wget
-    zfs
   ];
 
   # Network configuration
@@ -75,7 +73,7 @@
   };
 
   # Hardware support
-  hardware.enableAllFirmware = true;
+  hardware.enableRedistributableFirmware = true;
 
   users.motd = ''
     Welcome to Wolkenschloss Custom Installer!

@@ -68,7 +68,6 @@
             normalization = "formD";
             dnodesize = "auto";
             mountpoint = "none";
-            camount = "off";
             # disables the use of device files (such as block devices or character devices) within the dataset.
             # This means that files like /dev/sda cannot be created or used inside that ZFS dataset.
             # It's a security feature to prevent users or processes from creating device nodes, which could potentially

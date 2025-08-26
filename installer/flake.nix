@@ -51,6 +51,10 @@
           inherit system;
           format = "iso";
           modules = modules;
+          # explicit nixpkgs and lib:
+          pkgs = nixpkgs.legacyPackages.${system};
+          lib = nixpkgs.legacyPackages.${system}.lib;
+
           specialArgs = {
             nixpkgs = nixpkgs.legacyPackages.${system};
             inherit installerName sshKey nixosPasswordHash;
@@ -62,6 +66,7 @@
       forEachSystem = fun: nixpkgs.lib.genAttrs supportedSystems (system: fun system);
     in
     {
+      nixpkgs.config.allowUnfree = true;
       # Create ISOs for each supported system
       packages = forEachSystem (system: {
         iso = generateIso system [
