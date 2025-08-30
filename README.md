@@ -2,11 +2,11 @@
 
 ## Vision
 
-The vision of Projekt Wolkenschloss (German for "project cloud castle") is to be a complete self-hosting solution that empowers individuals to reclaim their digital sovereignty. In an era where tech giants and other companies amass unprecedented amounts of personal data and Web5 promises a decentralized future, Projekt Wolkenschloss aims to bridge the gap by making personal cloud compute accessible, secure, and privacy-first.
+The vision of Projekt Wolkenschloss (German for "project cloud castle") is to be a complete self-hosting solution that empowers individuals to reclaim their digital sovereignty. In an era where tech giants and other companies amass unprecedented amounts of personal data and Web5 promises a decentralized future on the other hand, Projekt Wolkenschloss aims to bridge the gap by making a personal cloud accessible, secure, and privacy-first.
 
 ## Project Mission
 
-Wolkenschloss enables and democratizes self-hosting by providing a curated, opinionated platform that "just works" out of the box. While technical enthusiasts can extend and customize everything, everyday users can just use it, knowing that privacy-respecting alternatives to Big Tech services are running securely in their own digital castle.
+Wolkenschloss enables self-hosting by providing a curated, opinionated platform that aims to "just work" out of the box. While technical enthusiasts can extend and customize everything, everyday users can just use it, knowing that privacy-respecting alternatives to Big Tech services are running securely in their own digital cloud castle.
 
 ## Our Philosophy
 
