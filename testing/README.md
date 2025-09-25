@@ -1,6 +1,6 @@
 # Testing
 
-The testing directories aim is to provide ways to test the Wolkenschloss.
+The testing directory's aim is to provide ways to test the Wolkenschloss.
 
 ## Preparing a test environment
 

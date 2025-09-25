@@ -1,3 +1,5 @@
+# Nix module to enable automatic rollback of the root ZFS dataset
+# via systemd service in the initrd.
 {
   nixpkgs,
   rootZfsDatasetSnapshot ? "rpool/nixos/root@empty",

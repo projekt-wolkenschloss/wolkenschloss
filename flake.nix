@@ -45,7 +45,6 @@
       integrationTests = (
         import ./testing {
           inherit nixpkgs disko;
-          lib = nixpkgs.lib;
         }
       );
     in

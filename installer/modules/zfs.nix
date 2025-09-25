@@ -8,9 +8,9 @@
 let
   zfsCompatibleKernelPackages = lib.filterAttrs (
     name: kernelPackages:
-      (builtins.match "linux_[0-9]+_[0-9]+" name) != null
-        && (builtins.tryEval kernelPackages).success
-        && (!kernelPackages.${config.boot.zfs.package.kernelModuleAttribute}.meta.broken)
+    (builtins.match "linux_[0-9]+_[0-9]+" name) != null
+    && (builtins.tryEval kernelPackages).success
+    && (!kernelPackages.${config.boot.zfs.package.kernelModuleAttribute}.meta.broken)
   ) nixpkgs.linuxKernel.packages;
 
   # Tries to find the latest ZFS-compatible Kernel currently available
@@ -25,11 +25,11 @@ in
 
   # Enable ZFS support
   boot.supportedFilesystems = [ "zfs" ];
-  
+
   # Ensure ZFS modules are loaded in initrd
   boot.initrd.availableKernelModules = [ "zfs" ];
   boot.initrd.kernelModules = [ "zfs" ];
-  
+
   # Include ZFS in the system
   environment.systemPackages = with nixpkgs; [
     zfs

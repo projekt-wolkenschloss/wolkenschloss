@@ -1,6 +1,5 @@
 { 
-  nixpkgs, 
-  lib, 
+  nixpkgs,
   disko, 
   ... 
 }:
@@ -26,7 +25,7 @@ in
       disko.nixosModules.disko
       (import ../hardware/partitioning-layouts/single-storage-device.nix {
         inherit disko;
-        inherit lib;
+        lib = nixpkgs.lib;
         disks = [ bootDevice ];
       })
       ( import ../hardware/partitioning-layouts/zfs-root-rollback.nix {
