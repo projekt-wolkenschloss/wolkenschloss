@@ -20,6 +20,7 @@ Maintainability is a core goal of Wolkenschloss, because self hosting is only su
 - **Modular**: Easier to understand, modify and test and enables customizations
 - **Transparent Operations**: Fully fledged monitoring stack
 - **Comprehensible Architecture**: Prioritizing clarity over cleverness
+- **Maintainable project and code**: Prioritizing readability and simplicity
 
 ## Accessible
 
