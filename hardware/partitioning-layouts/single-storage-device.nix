@@ -33,6 +33,15 @@
                   ];
                 };
               };
+              
+              # TODO move efi and bios parts to separate files and include based on arg
+              # BIOS Boot Partition
+              bios = {
+                type = "EF02";  # BIOS boot partition type
+                size = "1M";
+                priority = 1;   # Make it first partition
+                attributes = [ 0 ];
+              };
 
               # Root ZFS pool
               rpool = {

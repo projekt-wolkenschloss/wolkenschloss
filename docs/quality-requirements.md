@@ -29,3 +29,4 @@ Ranked by importance, descending:
 | SC6 | Updating system dependencies, services and apps should be easy and quick for maintainers. |
 | SC7 | A user does not have to choose services and apps. Instead, the maintainers curate a set of apps and services for the most common use cases. |
 | SC8 | Technical users can customize and extend Wolkenschloss to their needs. |
+| SC9 | A user can use a wide range of hardware, including older and less powerful devices to self host the project. |
