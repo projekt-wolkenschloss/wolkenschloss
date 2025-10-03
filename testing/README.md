@@ -28,6 +28,6 @@ To provision, run
 ```bash
 NIX_CONFIG="../#<configuration name>"
 TARGET_HOST_IP="<ip address>"
-SSH_KEY_FILE="/path/to/ssh/key"
+SSH_KEY_FILE="/absolute/path/to/ssh/key"
 nix run github:nix-community/nixos-anywhere -- -i "$SSH_KEY_FILE" --generate-hardware-config nixos-generate-config ./hardware-configuration.nix --flake "$NIX_CONFIG" --target-host nixos@"$TARGET_HOST_IP"
 ```

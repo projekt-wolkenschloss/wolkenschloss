@@ -14,7 +14,7 @@
         after = [ "zfs-import-rpool.service" ];
         wantedBy = [ "initrd.target" ];
         before = [ "sysroot.mount" ];
-        path = [ nixpkgs.zfs ];
+        path = [ nixpkgs.legacyPackages.x86_64-linux.zfs ];
         unitConfig.DefaultDependencies = "no";
         serviceConfig.Type = "oneshot";
         script = "zfs rollback -r ${rootZfsDatasetSnapshot}";
