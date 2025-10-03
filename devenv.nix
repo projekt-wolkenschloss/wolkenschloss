@@ -7,6 +7,8 @@
   # https://devenv.sh/packages/
   packages = with pkgs; [ 
     qemu
+    quickemu
+    nixos-anywhere
   ];
 
   # https://devenv.sh/scripts/
