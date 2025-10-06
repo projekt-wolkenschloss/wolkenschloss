@@ -18,6 +18,15 @@
           content = {
             type = "gpt";
             partitions = {
+              # TODO move efi and bios parts to separate files and include based on arg
+              # BIOS Boot Partition
+              boot = {
+                type = "EF02";  # BIOS boot partition type
+                size = "1M";
+                # priority = 1;   # Make it first partition
+                # attributes = [ 0 ];
+              };
+
               # EFI System Partition (ESP)
               esp = {
                 label = "ESP";
@@ -33,16 +42,6 @@
                   ];
                 };
               };
-              
-              # TODO move efi and bios parts to separate files and include based on arg
-              # BIOS Boot Partition
-              bios = {
-                type = "EF02";  # BIOS boot partition type
-                size = "1M";
-                priority = 1;   # Make it first partition
-                attributes = [ 0 ];
-              };
-
               # Root ZFS pool
               rpool = {
                 size = "100%";
@@ -142,6 +141,13 @@
                 options.mountpoint = "legacy";
                 mountpoint = "/var/log";
               };
+              # Application libs 
+              "nixos/var/lib" = {
+                type = "zfs_fs";
+                # Use traditional fstab
+                options.mountpoint = "legacy";
+                mountpoint = "/var/lib";
+              };
             };
           };
         };
@@ -175,6 +181,12 @@
 
     "nixos/var/log" = {
       device = "rpool/nixos/var/log";
+      fsType = "zfs";
+      neededForBoot = true;
+    };
+
+    "nixos/var/lib" = {
+      device = "rpool/nixos/var/lib";
       fsType = "zfs";
       neededForBoot = true;
     };

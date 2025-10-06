@@ -23,20 +23,19 @@ Then, you need to create a test VM:
 
 start it with `./vm-manager.sh start <vmid>` and test connectivity with `./vm-manager.sh ssh <vmid>`.
 
-
 ### Local QEMU VMs
 
 Instead you can use locally running qemu vms to test Wolkenschloss.
 
 ```shell
-# Activate the dev environment
+# Activate the dev environment, if not done automatically
 devenv shell
 
 # Start the VM
 SCENARIO="<scenario-name>"
 cd scenarios/qemu-"$SCENARIO" && quickemu --vm quickemu.conf
 
-# Connect to the VM. When the ISO was created with a preconfigured SSH, use that.
+# Connect to the VM. When the ISO was created with preconfigured SSH, use that.
 ssh -o "StrictHostKeyChecking=no" -p 22220 -i ~/.ssh/<KEY> nixos@localhost
 ```
 
@@ -62,5 +61,5 @@ NIX_CONFIG="../#wlknslos-single-storage-device"
 TARGET_HOST_IP="localhost"
 SSH_KEY_FILE="/home/geothain/.ssh/id_ed25519_wolkenschloss_test_vms"
 
-nixos-anywhere -i "$SSH_KEY_FILE" -p 22220 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix --flake "$NIX_CONFIG" --target-host nixos@"$TARGET_HOST_IP"
+nixos-anywhere -i "$SSH_KEY_FILE" -p 22220 --generate-hardware-config nixos-generate-config ./hardware-configuration.nix --flake "$NIX_CONFIG" --target-host nixos@"$TARGET_HOST_IP" --post-kexec-ssh-port 22220
 ```
