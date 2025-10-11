@@ -33,7 +33,7 @@ devenv shell
 
 # Start the VM
 SCENARIO="<scenario-name>"
-cd scenarios/qemu-"$SCENARIO" && quickemu --vm quickemu.conf
+cd scenarios/qemu-"$SCENARIO" && quickemu --vm quickemu.conf --keyboard_layout de_de
 
 # Connect to the VM. When the ISO was created with preconfigured SSH, use that.
 ssh -o "StrictHostKeyChecking=no" -p 22220 -i ~/.ssh/<KEY> nixos@localhost

@@ -4,9 +4,14 @@
   lib,
   disks ? [ "/dev/sda" ],
   rootZfsDatasetSnapshot ? "rpool/nixos/root@empty",
+  useBiosBoot ? false,
   ...
 }:
 
+let 
+  bootPartition = if useBiosBoot then (import ./bios-partition.nix {})
+    else (import ./uefi-partition.nix {});
+in
 {
   disko = {
     # extraRootModules = [ "zfs" ];
@@ -18,30 +23,6 @@
           content = {
             type = "gpt";
             partitions = {
-              # TODO move efi and bios parts to separate files and include based on arg
-              # BIOS Boot Partition
-              boot = {
-                type = "EF02";  # BIOS boot partition type
-                size = "1M";
-                # priority = 1;   # Make it first partition
-                # attributes = [ 0 ];
-              };
-
-              # EFI System Partition (ESP)
-              esp = {
-                label = "ESP";
-                # sgdisk-specific short code
-                type = "EF00";
-                size = "1G";
-                content = {
-                  type = "filesystem";
-                  format = "vfat";
-                  mountpoint = "/boot";
-                  mountOptions = [
-                    "defaults"
-                  ];
-                };
-              };
               # Root ZFS pool
               rpool = {
                 size = "100%";
@@ -51,7 +32,7 @@
                   pool = "rpool";
                 };
               };
-            };
+            } // bootPartition;
           };
         };
       };
