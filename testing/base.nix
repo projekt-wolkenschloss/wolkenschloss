@@ -18,9 +18,14 @@
     kernelParams = [
       "zfs_force=1"
     ];
-    loader.grub = {
-      zfsSupport = true;
-      device = bootDevice;
+    loader = {
+      efi.canTouchEfiVariables = true;
+      grub = {
+        enable = true;
+        zfsSupport = true;
+        device = "nodev";
+        efiSupport = true;
+      };
     };
   };
 
