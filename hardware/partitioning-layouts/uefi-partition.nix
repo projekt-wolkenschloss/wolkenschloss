@@ -1,5 +1,5 @@
 # A nix disko partition layout for UEFI systems
-{}:
+{ }:
 
 {
   # EFI System Partition (ESP)

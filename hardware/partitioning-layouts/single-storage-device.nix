@@ -8,9 +8,9 @@
   ...
 }:
 
-let 
-  bootPartition = if useBiosBoot then (import ./bios-partition.nix {})
-    else (import ./uefi-partition.nix {});
+let
+  bootPartition =
+    if useBiosBoot then (import ./bios-partition.nix { }) else (import ./uefi-partition.nix { });
 in
 {
   disko = {
@@ -122,7 +122,7 @@ in
                 options.mountpoint = "legacy";
                 mountpoint = "/var/log";
               };
-              # Application libs 
+              # Application libs
               "nixos/var/lib" = {
                 type = "zfs_fs";
                 # Use traditional fstab

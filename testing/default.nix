@@ -1,14 +1,14 @@
-{ 
+{
   nixpkgs,
-  disko, 
-  ... 
+  disko,
+  ...
 }:
 
-let  
+let
   sshKey =
     if (builtins.getEnv "VM_SSH_KEY") != "" then
       builtins.getEnv "VM_SSH_KEY"
-    else 
+    else
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPfdblJ4KYOY8aLSnPigAhinhAnUyXxMLsTbGmmg15YC wolkenschloss-developer-key-for-test-vms";
   nixosPasswordHash =
     if (builtins.getEnv "VM_NIXOS_PASSWORD_HASH") != "" then
@@ -28,14 +28,14 @@ in
         lib = nixpkgs.lib;
         disks = [ bootDevice ];
       })
-      ( import ../hardware/partitioning-layouts/zfs-root-rollback.nix {
+      (import ../hardware/partitioning-layouts/zfs-root-rollback.nix {
         inherit nixpkgs;
       })
       ./base.nix
       ./auth.nix
     ];
     specialArgs = {
-      inherit sshKey nixosPasswordHash bootDevice;
+      inherit sshKey nixosPasswordHash;
     };
   };
 }

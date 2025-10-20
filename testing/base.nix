@@ -1,6 +1,5 @@
-{ 
-  bootDevice ? "/dev/sda",
-  ... 
+{
+  ...
 }:
 
 {
