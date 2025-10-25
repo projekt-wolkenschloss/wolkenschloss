@@ -1,14 +1,16 @@
-{ pkgs, lib, config, inputs, ... }:
+{ pkgs, ... }:
 
 {
   # https://devenv.sh/basics/
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = with pkgs; [ 
+  packages = with pkgs; [
     qemu
     quickemu
     nixos-anywhere
+    zstd
+    wget
   ];
 
   # https://devenv.sh/scripts/

@@ -28,6 +28,10 @@ start it with `./proxmox-vm-manager.sh start <vmid>` and test connectivity with 
 
 Instead you can use locally running qemu vms to test Wolkenschloss.
 
+We use the [quickemu](https://github.com/quickemu-project/quickemu) project to shortcut the qemu argument adventure.
+It generates a `quickemu.sh` that contains all arguments for the qemu commands that we customize into the final
+`start.sh`.
+
 Prerequisites:
 
 1. OVMF installed and firmware accessible in `/etc/OVMF/FV`. This contains UEFI firmware needed for the VMs
@@ -45,12 +49,9 @@ rm sata0.qcow
 qemu-img create -f qcow sata0.qcow 128G
 
 # Start the VM
-quickemu --vm quickemu.conf \
-    --cpu_cores="4" \
-    --keyboard_layout DE_de \
-    --extra_args "-drive file=sata0.qcow,id=sata-drive,if=none -device ahci,id=ahci -device ide-hd,drive=sata-drive,bus=ahci.0"
+./start.sh
 
-# Connect to the VM. When the ISO was created with preconfigured SSH, use that.
+# Test that the vm is running with ssh enable by connecting to the vm
 ssh -o "StrictHostKeyChecking=no" -p 22220 -i ~/.ssh/<KEY> nixos@localhost
 ```
 

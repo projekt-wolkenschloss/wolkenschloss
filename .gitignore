@@ -23,4 +23,4 @@ devenv.local.nix
 
 # Quickemu VMs
 testing/scenarios/qemu-*/*
-!testing/scenarios/qemu-*/*.conf
+!testing/scenarios/qemu-*/start.sh
