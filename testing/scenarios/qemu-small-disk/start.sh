@@ -1,3 +1,9 @@
+
+DRIVE_FILE="sata0.qcow"
+if [[ -z $1 ]]; then
+    DRIVE_FILE="$1"
+fi
+
 #!/usr/bin/env bash
 /nix/store/sd37c3ra55bvhjc1dldqcqi9ykmsb7f2-qemu-10.1.0/bin/qemu-system-x86_64 \
     -name quickemu,process=quickemu \
