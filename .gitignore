@@ -22,5 +22,6 @@ devenv.local.nix
 .pre-commit-config.yaml
 
 # Quickemu VMs
+*.qcow
 testing/scenarios/qemu-*/*
 !testing/scenarios/qemu-*/start.sh
