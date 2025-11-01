@@ -16,8 +16,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     treefmt-nix.url = "github:numtide/treefmt-nix";
-    #    facter-modules.url = "github:numtide/nixos-facter-modules";
-    #    wolkenschloss.url = "github:projekt-wolkenschloss/wolkenschloss/feature/a-simple-backup-server";
   };
 
   outputs =
@@ -62,12 +60,6 @@
           system = "x86_64-linux";
           modules = (import ./machines/wolkenschloss-development-wsl.nix) inputs;
         };
-
-        # backup-server = nixpkgs.lib.nixosSystem {
-        #   specialArgs = { inherit inputs; };
-        #   system = "x86_64-linux";
-        #   modules = (import ./machines/backup-server.nix) inputs;
-        # };
       };
     };
 }
