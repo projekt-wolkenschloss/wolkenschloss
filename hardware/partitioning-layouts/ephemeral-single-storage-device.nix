@@ -48,7 +48,7 @@ in
           # zfs properties for the top level dataset
           # For reference and background: https://jrs-s.net/2018/08/17/zfs-tuning-cheat-sheet/
           commonRootFsOptions = {
-            compression = "lz4";
+            compression = "zstd";
             canmount = "off";
             # atime = "off";
             relatime = "on";
