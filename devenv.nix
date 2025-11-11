@@ -13,6 +13,14 @@
     wget
   ];
 
+  languages = {
+    python = {
+      enable = true;
+      version = "3.14";
+      venv.enable = true;
+    };  
+  };
+
   # https://devenv.sh/scripts/
   scripts.hello.exec = ''
     echo hello from $GREET
