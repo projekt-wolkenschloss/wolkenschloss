@@ -1,0 +1,46 @@
+declare "node_logs" {
+	argument "logs_receiver" {
+		optional = false
+		comment  = "Where to send logs to"
+	}
+
+	local.file_match "var_logs" {
+		path_targets = [
+			{
+				"__path__"         = "/var/log/**/*.log",
+				"__path_exclude__" = "/var/log/installer/**/*",
+			},
+		]
+		sync_period = "10s"
+	}
+
+	loki.source.file "var_logs_scraper" {
+		targets    = local.file_match.var_logs.targets
+		forward_to = [
+			argument.logs_receiver.value,
+		]
+		tail_from_end = true
+	}
+
+	// All messages read from the journal include internal labels following the pattern of __journal_FIELDNAME
+	// and are dropped before sending to the list of receivers specified in forward_to.
+	// To keep these labels, we use the relabel_rules argument and relabel them to not be prefixed with __.
+	loki.relabel "journal" {
+		forward_to = []
+
+		rule {
+			source_labels = ["__journal__systemd_unit"]
+			target_label  = "systemd_unit"
+		}
+	}
+
+	loki.source.journal "system_journal" {
+		forward_to = [
+			argument.logs_receiver.value,
+		]
+		format_as_json = true
+		labels         = {
+			component = "loki.source.journal",
+		}
+	}
+}

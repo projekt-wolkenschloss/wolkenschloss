@@ -1,0 +1,86 @@
+{
+  "nodes": {
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1736864502,
+        "narHash": "sha256-ItkIZyebGvNH2dK9jVGzJHGPtb6BSWLN8Gmef16NeY0=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "0141aabed359f063de7413f80d906e1d98c0c123",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "ref": "v1.11.0",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
+    "nixlib": {
+      "locked": {
+        "lastModified": 1736643958,
+        "narHash": "sha256-tmpqTSWVRJVhpvfSN9KXBvKEXplrwKnSZNAoNPf/S/s=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "1418bc28a52126761c02dd3d89b2d8ca0f521181",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
+    "nixos-generators": {
+      "inputs": {
+        "nixlib": "nixlib",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1751903740,
+        "narHash": "sha256-PeSkNMvkpEvts+9DjFiop1iT2JuBpyknmBUs0Un0a4I=",
+        "owner": "nix-community",
+        "repo": "nixos-generators",
+        "rev": "032decf9db65efed428afd2fa39d80f7089085eb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixos-generators",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1755922037,
+        "narHash": "sha256-wY1+2JPH0ZZC4BQefoZw/k+3+DowFyfOxv17CN/idKs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "b1b3291469652d5a2edb0becc4ef0246fff97a7c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "disko": "disko",
+        "nixos-generators": "nixos-generators",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

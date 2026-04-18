@@ -1,0 +1,32 @@
+*.env
+.idea/
+tmp/
+*.bkp
+*.log
+/installer/iso
+/installer/result
+
+.local/
+
+### Python
+*.venv/
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+# Quickemu VMs
+*.qcow
+testing/scenarios/qemu-*/*
+!testing/scenarios/qemu-*/start.sh
+
+# Nix
+result/
+result
+*.qcow2

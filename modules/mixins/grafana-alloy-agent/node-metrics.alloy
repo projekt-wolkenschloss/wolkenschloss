@@ -1,0 +1,83 @@
+declare "node_metrics" {
+	argument "metrics_receiver" {
+		optional = false
+		comment  = "Where to send metrics to"
+	}
+
+	prometheus.exporter.unix "node" {
+		enable_collectors = [
+			"meminfo",
+			"systemd",
+			"logind",
+		]
+
+		// Disable unnecessary collectors to reduce overhead
+		disable_collectors = ["ipvs", "btrfs", "infiniband", "xfs"]
+
+		filesystem {
+			// Exclude filesystem types that aren't relevant for monitoring
+			fs_types_exclude = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
+			// Exclude mount points that aren't relevant for monitoring
+			mount_points_exclude = "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+			// Timeout for filesystem operations
+			mount_timeout = "5s"
+		}
+
+		netclass {
+			// Ignore virtual and container network interfaces
+			ignored_devices = "^(veth.*|cali.*|[a-f0-9]{15})$"
+		}
+
+		netdev {
+			// Exclude virtual and container network interfaces from device metrics
+			device_exclude = "^(veth.*|cali.*|[a-f0-9]{15})$"
+		}
+	}
+
+	// This block relabels metrics coming from node_exporter to add standard labels
+	discovery.relabel "node" {
+		targets = prometheus.exporter.unix.node.targets
+
+		rule {
+			// Set the instance label to the hostname of the machine
+			target_label = "instance"
+			replacement  = constants.hostname
+		}
+
+		rule {
+			// Set a standard job name for all node_exporter metrics
+			target_label = "job"
+			replacement  = "node_exporter"
+		}
+	}
+
+	// Export alloy's own metrics
+	prometheus.exporter.self "alloy_agent" { }
+
+	discovery.relabel "smartctl_exporter" {
+		targets = [
+			{"__address__" = "localhost:9633", "job" = "prometheus_smartctl_exporter", "instance" = constants.hostname},
+		]
+	}
+
+    discovery.relabel "ssh_tarpit" {
+        targets = [
+            {"__address__" = "localhost:45001", "job" = "prometheus_ssh_tarpit_exporter", "instance" = constants.hostname},
+        ]
+    }
+
+	prometheus.scrape "system" {
+		targets = array.concat(
+			discovery.relabel.node.output,
+			prometheus.exporter.self.alloy_agent.targets,
+			discovery.relabel.smartctl_exporter.output,
+            discovery.relabel.ssh_tarpit.output,
+		)
+
+		forward_to = [
+			argument.metrics_receiver.value,
+		]
+		scrape_interval = "15s"
+		scrape_timeout  = "2s"
+	}
+}

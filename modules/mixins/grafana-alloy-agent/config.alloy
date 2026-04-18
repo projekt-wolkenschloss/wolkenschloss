@@ -1,0 +1,48 @@
+import.file "node_logs" {
+	filename = file.path_join(module_path, "node-logs.alloy")
+}
+
+import.file "node_metrics" {
+	filename = file.path_join(module_path, "node-metrics.alloy")
+}
+
+prometheus.remote_write "metrics" {
+	endpoint {
+		url = string.format("%s/api/v1/write", sys.env("PROMETHEUS_URL"))
+
+		basic_auth {
+			username = sys.env("PROMETHEUS_USERNAME")
+			password = sys.env("PROMETHEUS_PASSWORD")
+		}
+	}
+	external_labels = {
+		"metrics_provider" = "grafana-alloy",
+		"hostname"         = constants.hostname,
+	}
+}
+
+loki.write "grafana_loki" {
+	endpoint {
+		url = string.format("%s/loki/api/v1/push", sys.env("LOKI_URL"))
+	}
+
+	external_labels = {
+		"logs_provider" = "grafana-alloy",
+		"hostname"      = constants.hostname,
+	}
+}
+
+// Configure alloy to write its own logs to loki
+logging {
+	level    = "info"
+	format   = "json"
+	write_to = [loki.write.grafana_loki.receiver]
+}
+
+node_metrics.node_metrics "node" {
+	metrics_receiver = prometheus.remote_write.metrics.receiver
+}
+
+node_logs.node_logs "node" {
+	logs_receiver = loki.write.grafana_loki.receiver
+}

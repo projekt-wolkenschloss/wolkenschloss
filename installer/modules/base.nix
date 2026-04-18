@@ -1,0 +1,83 @@
+{
+  config,
+  pkgs,
+  installerName ? "wolkenschloss-installer",
+  hostName ? "wolkenschloss-nixos-test-vm",
+  keyboardLayoutShortCode ? "de",
+  ...
+}:
+
+{
+  # ISO configuration
+  # TODO needed?
+  isoImage = {
+    isoName = "${installerName}-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}.iso";
+    volumeID = "WOLKENSCHLOSS";
+    makeEfiBootable = true;
+    makeUsbBootable = true;
+  };
+
+  # Basic system configuration
+  system.stateVersion = "25.05";
+
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
+
+  services.xserver.xkb.layout = "${keyboardLayoutShortCode}"; # Set default keyboard layout
+  console.keyMap = "${keyboardLayoutShortCode}"; # Set console keyboard layout
+
+  # Essential packages
+  environment.systemPackages = with pkgs; [
+    curl
+    git
+    htop
+    tmux
+    vim
+    wget
+  ];
+
+  # Network configuration
+  networking = {
+    hostName = "${hostName}";
+    usePredictableInterfaceNames = true;
+    dhcpcd.enable = true;
+    wireless.enable = false; # Disable if not needed
+    useDHCP = true;
+  };
+
+  # SSH configuration
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PubkeyAuthentication = true;
+      MaxAuthTries = 10;
+    };
+  };
+
+  # Enables mDNS for local network discovery
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true; # Enable resolution of .local domains
+    openFirewall = true; # Allow mDNS traffic through the firewall
+    publish = {
+      enable = true;
+      addresses = true;
+      workstation = true;
+    };
+  };
+
+  # Hardware support
+  hardware.enableRedistributableFirmware = true;
+
+  users.motd = ''
+    Welcome to Wolkenschloss Custom Installer!
+
+    This system is ready for remote and automated deployment.
+  '';
+}

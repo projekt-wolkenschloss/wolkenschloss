@@ -1,0 +1,30 @@
+description: "Small disk scenario to test space constraints with a single disk"
+vm:
+  memory: 4096
+  cores: 3
+  static_ip: "192.168.1.100"
+  gateway: "192.168.1.1"
+  netmask: "24"
+  disks:
+    - size: "16"
+      type: "scsi"
+      name: "small-disk"
+
+test_steps:
+  - name: "Boot NixOS Live"
+    description: "Boot from NixOS live ISO"
+  - name: "Clone Repository"
+    description: "git clone https://github.com/projekt-wolkenschloss/wolkenschloss.git"
+  - name: "Modify Disko Config"
+    description: "Adjust partition sizes for small disk"
+  - name: "Run Disko"
+    description: "sudo nix --experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode disko ./testing/scenarios/small-disk-disko.nix"
+  - name: "Install NixOS"
+    description: "sudo nixos-install --flake .#nixos-testing-1"
+  - name: "Verify Space Usage"
+    description: "Check disk space usage and ensure system is functional"
+
+expected_partitions:
+  - "/dev/sda1 (ESP - 512M)"
+  - "/dev/sda2 (bpool - 2G)"
+  - "/dev/sda3 (rpool - remaining)"

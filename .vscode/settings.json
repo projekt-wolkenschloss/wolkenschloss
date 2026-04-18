@@ -1,0 +1,37 @@
+{
+    "markdown.validate.enabled": true,
+    "window.autoDetectColorScheme": true,
+    "git.autofetch": true,
+    "git.alwaysShowStagedChangesResourceGroup": true,
+    "git.blame.editorDecoration.enabled": false,
+    "diffEditor.experimental.showMoves": true,
+    "diffEditor.hideUnchangedRegions.enabled": true,
+    "nix.enableLanguageServer": true,
+    "nix.serverPath": "nixd",
+    // LSP config can be passed via the ``nix.serverSettings.{lsp}`` as shown below.
+    "nix.serverSettings": {
+        // check https://github.com/nix-community/nixd/blob/main/nixd/docs/configuration.md for all nixd config
+        "nixd": {
+            "formatting": {
+                "command": [
+                    "nixfmt"
+                ],
+            }
+        }
+    },
+    "files.associations": {
+        "*.hujson": "jsonc"
+    },
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "*.hujson"
+            ],
+            "schema": {
+                "allowTrailingCommas": true
+            }
+        }
+    ],
+    "cSpell.language": "en,de-de",
+    "editor.formatOnSave": true
+}
