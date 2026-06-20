@@ -2,6 +2,9 @@
 
 [![Quillx](https://raw.githubusercontent.com/qainsights/Quillx/main/badges/quillx-2.svg)](https://github.com/qainsights/Quillx)
 
+> [!NOTE]
+> Note: Code is hosted on Codeberg and mirrored to GitHub for visibility. Please report issues on Codeberg.
+
 ## Vision
 
 The vision of Projekt Wolkenschloss (German for "project cloud castle") is to be a complete self-hosting solution that provides the basic services you need in a personal cloud.
@@ -26,8 +29,8 @@ Also, the project is currently only a hobby of the maintainers. With we, I mean 
 A rough roadmap with a rough order of whats next:
 
 - [x] Basic backup system for other hosts (Sturmfeste)
+- [] Basic CI/CD including infrastructure
 - [] Automatic tests for the backup system
-- [] Basic CI/CD
 - [] Bootable system image for Sturmfeste
 - [] Basic main server with Immich and a reverse proxy (Wolkenschloss)
 

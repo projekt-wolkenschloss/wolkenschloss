@@ -9,13 +9,25 @@ Whether you're a developer, designer, or just passionate about self-hosting, the
 - **Documentation**: Improve our documentation to make it more accessible and user-friendly.
 - **Feedback**: Share your thoughts on the project and suggest improvements.
 - **Content-production**: If you are a content producer, sharing the project with your audience also helps.
+- **Sponsoring**: Even 10€/$ a month can help a lot, for example to pay for the server costs. See [Sponsoring](docs/sponsoring.md).
 
 If you are unsure how to get involved, feel free to reach out. Maintaining the project does not mean you have to work on every aspect of it, full-time.
 
+## Project Infrastructure
+
+- [Issues (YouTrack)](https://projektwolkenschloss.youtrack.cloud/)
+- [Source Code (Codeberg)](https://codeberg.org/projekt-wolkenschloss/wolkenschloss)
+- [CI (Woodpecker CI)](https://ci.codeberg.org/repos/17153)
+
 ## Usage of AI
 
-We are open to the use of AI tools to assist in development, documentation, and other aspects of the project. However, we ask that you be **transparent** about your use of AI and ensure that any contributions made with the assistance of AI are **thoroughly** reviewed and tested by a human before being merged into the project.
+We are open to the use of AI tools to assist in development, documentation, and other aspects of the project. However, we ask that you be **transparent** about your use of AI and ensure that any contributions made with the assistance of AI are **thoroughly** reviewed and tested by a human before being merged into the project. We expect you to be able to do
+everything the AI generates for you **yourself**.
 
 ## Issue Tracking
 
 The project uses YouTrack for issue tracking. This is currently closed to the public and invite-only. Maintainers will be invited and the issue tracker will be opened to the public once the project is more mature.
+
+## Contributor License Agreement
+
+We keep it simple: By contributing to the project, you agree that your contributions are licensed under the same license as the project itself (Inbound license = Outbound license).
