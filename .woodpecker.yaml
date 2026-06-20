@@ -1,0 +1,5 @@
+steps:
+  - name: Test
+    image: bash
+    commands:
+      - echo "Hello, World!"
