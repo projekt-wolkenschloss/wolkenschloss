@@ -33,7 +33,7 @@
   languages.python = {
     enable = true;
     version = "3.14";
-    directory = "./testing";
+    directory = "./tests";
 
     venv.enable = true;
 

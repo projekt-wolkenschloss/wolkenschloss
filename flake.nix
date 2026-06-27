@@ -64,13 +64,13 @@
 
       packages =
         let
-          sturmfesteTest = import ./testing/sturmfeste.nix {
+          sturmfesteTest = import ./src/tests/sturmfeste.nix {
             inherit inputs;
             pkgs = nixpkgs;
           };
         in
         eachSystem (pkgs: {
-          test-minimal = pkgs.testers.runNixOSTest ./testing/minimal.nix;
+          test-minimal = pkgs.testers.runNixOSTest ./src/tests/minimal.nix;
           test-sturmfeste = pkgs.testers.runNixOSTest sturmfesteTest;
         });
     };
