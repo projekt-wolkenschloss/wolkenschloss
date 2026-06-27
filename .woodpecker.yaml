@@ -1,5 +1,7 @@
 steps:
   - name: Test
     image: bash
+    when:
+      - event: manual
     commands:
       - echo "Hello, World!"

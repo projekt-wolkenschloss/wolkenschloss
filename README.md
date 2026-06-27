@@ -3,7 +3,7 @@
 [![Quillx](https://raw.githubusercontent.com/qainsights/Quillx/main/badges/quillx-2.svg)](https://github.com/qainsights/Quillx)
 
 > [!NOTE]
-> Note: Code is hosted on Codeberg and mirrored to GitHub for visibility. Please report issues on Codeberg.
+> Code is hosted on Codeberg and mirrored to GitHub for visibility. Please report issues on Codeberg.
 
 ## Vision
 

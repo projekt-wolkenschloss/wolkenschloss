@@ -1,5 +1,4 @@
 {
-  inputs,
   lib,
   config,
   ...
@@ -10,8 +9,6 @@ let
 in
 {
   imports = [
-    inputs.disko.nixosModules.disko
-    inputs.sops-nix.nixosModules.sops
     ../disko
     ../server.nix
   ];

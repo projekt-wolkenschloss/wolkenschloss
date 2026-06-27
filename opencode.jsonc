@@ -1,6 +1,5 @@
 {
     "$schema": "https://opencode.ai/config.json",
-    "model": "anthropic/claude-sonnet-4-5",
     "autoupdate": "notify",
     "compaction": {
         "auto": true,
@@ -17,12 +16,13 @@
             "*secret*": "deny"
         },
         "bash": {
+            "sudo *": "deny",
             "git *": "allow",
             "git commit *": "ask",
             "git push *": "deny",
             "ssh *": "ask",
             "scp *": "ask",
-            "rsync *": "ask",
+            "rsync *": "ask"
         },
         "edit": "ask"
     }

@@ -30,3 +30,6 @@ testing/scenarios/qemu-*/*
 result/
 result
 *.qcow2
+
+# Opencode
+.opencode/package-lock.json

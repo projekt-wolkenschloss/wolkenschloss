@@ -16,7 +16,7 @@
       test = inputs.nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = {
-          inputs = inputs // inputs.wolkenschloss.inputs;
+          inherit inputs;
         };
         modules = [
           ./configuration.nix

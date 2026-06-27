@@ -6,6 +6,8 @@ This is a test flake that serves as an example and development playground for th
 
 ## Getting Started
 
+This guides you to use the Sturmfeste module on your own.
+
 First, setup a flake with nixpkgs as a dependency:
 
 ```nix

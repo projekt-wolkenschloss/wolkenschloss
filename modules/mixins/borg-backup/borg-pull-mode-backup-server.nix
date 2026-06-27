@@ -99,7 +99,7 @@
   config =
     let
       moduleCfg = config.wolkenschloss.modules.mixins.borgPullModeBackupServer;
-      enabledJobs = lib.filterAttrs (name: value: value.enable == true) moduleCfg.jobs;
+      enabledJobs = lib.filterAttrs (_name: value: value.enable == true) moduleCfg.jobs;
 
       mkSocketPath =
         {

@@ -1,13 +1,14 @@
 { pkgs, ... }:
 
 {
+  # See full reference at https://devenv.sh/reference/options/
+
   # https://devenv.sh/basics/
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
   packages = with pkgs; [
     qemu
-    quickemu
     nixos-anywhere
     zstd
     wget
@@ -25,18 +26,30 @@
 
   # https://devenv.sh/basics/
   enterShell = ''
-    hello         # Run scripts directly
-    git --version # Use packages
+    hello
+    git --version
   '';
 
-  # https://devenv.sh/tasks/
-  # tasks = {
-  #   "myproj:setup".exec = "mytool build";
-  #   "devenv:enterShell".after = [ "myproj:setup" ];
-  # };
+  languages.python = {
+    enable = true;
+    version = "3.14";
+    directory = "./testing";
 
-  # https://devenv.sh/git-hooks/
-  # git-hooks.hooks.shellcheck.enable = true;
+    venv.enable = true;
 
-  # See full reference at https://devenv.sh/reference/options/
+    uv = {
+      enable = true;
+      sync.enable = true;
+    };
+  };
+
+  tasks = {
+    "all:update-devenv" = {
+      exec = "devenv update";
+    };
+
+    "all:update-flake" = {
+      exec = "nix flake update";
+    };
+  };
 }

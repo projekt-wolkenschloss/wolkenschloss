@@ -65,7 +65,7 @@ in
     hardware.enableRedistributableFirmware = true;
 
     # Allow unfree packages
-    nixpkgs.config.allowUnfree = true;
+    nixpkgs.config.allowUnfree = lib.mkDefault true;
 
     # In case of a laptop, stop it from going to sleep on lid close.
     wolkenschloss.modules.mixins.disableSleepAndHibernation.enable = lib.mkDefault true;
