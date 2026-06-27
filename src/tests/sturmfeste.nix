@@ -25,23 +25,29 @@
         imports = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
-          ../modules/sturmfeste
+          ../../modules/sturmfeste
         ];
 
         # Enables the Sturmfeste module
         pwks.sturmfeste = {
           enable = true;
           adminPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname";
-          secretsFile = ./sturmfeste-test/secrets.json;
+          secretsFile = ./sturmfeste/secrets.json;
         };
       };
 
     vm_other = { ... }: {
       imports = [
-        ../modules/mixins/borg-backup/borg-pull-mode-backup-client.nix
+        ../../modules/mixins/borg-backup/borg-pull-mode-backup-client.nix
       ];
 
       wolkenschloss.modules.mixins.borgPullModeBackupClient.enable = true;
+
+      # Add test data
+      environment.etc = {
+        "dummy-data/precious-animals.txt".source = ./sturmfeste/test-data/precious-animals.txt;
+        "dummy-data/random-bytes.bin".source = ./sturmfeste/test-data/random-bytes.bin;
+      };
     };
   };
 
@@ -50,5 +56,7 @@
 
     vm_other.succeed("whoami")
     vm_sturmfeste.succeed("whoami")
+
+    vm_other.succeed("stat /etc/dummy-data/precious-animals.txt")
   '';
 }
