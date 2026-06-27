@@ -3,7 +3,7 @@
 [![Quillx](https://raw.githubusercontent.com/qainsights/Quillx/main/badges/quillx-2.svg)](https://github.com/qainsights/Quillx)
 
 > [!NOTE]
-> Code is hosted on Codeberg and mirrored to GitHub for visibility. Please report issues on Codeberg.
+> Code is hosted on Codeberg and mirrored to GitHub for visibility. Please interact with the repo on Codeberg.
 
 ## Vision
 
@@ -29,10 +29,10 @@ Also, the project is currently only a hobby of the maintainers. With we, I mean 
 A rough roadmap with a rough order of whats next:
 
 - [x] Basic backup system for other hosts (Sturmfeste)
-- [] Basic CI/CD including infrastructure
-- [] Automatic tests for the backup system
-- [] Bootable system image for Sturmfeste
-- [] Basic main server with Immich and a reverse proxy (Wolkenschloss)
+- [ ] Basic CI/CD including infrastructure
+- [ ] Automatic tests for the backup system
+- [ ] Bootable system image for Sturmfeste
+- [ ] Basic main server with Immich and a reverse proxy (Wolkenschloss)
 
 ## Getting Started
 
