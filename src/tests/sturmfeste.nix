@@ -10,6 +10,13 @@
     inherit (inputs) sops-nix disko;
   };
 
+  globalTimeout = 600;
+  qemu.forceAccel = true;
+
+  extraPythonPackages = p: [
+    (p.callPackage ./package.nix { })
+  ];
+
   node.pkgsReadOnly = false;
 
   nodes = {
@@ -52,12 +59,8 @@
   };
 
   testScript = ''
-    start_all()
+    from wolkenschloss_tests import sturmfeste
 
-    vm_other.succeed("whoami")
-    vm_sturmfeste.succeed("whoami")
-
-    vm_other.succeed("stat /etc/dummy-data/precious-animals.txt")
+    sturmfeste.start(vm_sturmfeste=machine1, vm_other=machine2)
   '';
-  # testScript = (builtins.readFile ./sturmfeste/test_script.py);
 }
