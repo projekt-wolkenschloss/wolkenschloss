@@ -59,4 +59,5 @@
 
     vm_other.succeed("stat /etc/dummy-data/precious-animals.txt")
   '';
+  # testScript = (builtins.readFile ./sturmfeste/test_script.py);
 }

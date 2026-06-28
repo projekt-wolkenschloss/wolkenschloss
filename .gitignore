@@ -10,6 +10,7 @@ tmp/
 
 ### Python
 *.venv/
+venv/
 
 # Devenv
 .devenv*
@@ -30,6 +31,9 @@ testing/scenarios/qemu-*/*
 result/
 result
 *.qcow2
+
+## NixOS test framework
+.nixos-test-history
 
 # Opencode
 .opencode/package-lock.json
