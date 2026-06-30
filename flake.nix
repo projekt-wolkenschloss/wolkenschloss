@@ -81,7 +81,7 @@
           };
         in
         eachSystem (pkgs: {
-          # test-lib = pkgs.callPackage ./src/tests/package.nix;
+          test-lib = pkgs.python3.pkgs.callPackage ./src/tests/package.nix { };
           test-minimal = pkgs.testers.runNixOSTest ./src/tests/minimal.nix;
           test-sturmfeste = pkgs.testers.runNixOSTest sturmfesteTest;
         });

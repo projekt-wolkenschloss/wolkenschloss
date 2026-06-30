@@ -1,7 +1,7 @@
 {
+  lib,
   buildPythonPackage,
   setuptools,
-  lib,
   nixos-test-driver,
   ty,
 }:
@@ -15,7 +15,7 @@ buildPythonPackage {
     root = ./.;
     fileset = lib.fileset.unions [
       ./pyproject.toml
-      ./src
+      ./wolkenschloss_tests
     ];
   };
 

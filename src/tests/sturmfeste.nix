@@ -61,6 +61,6 @@
   testScript = ''
     from wolkenschloss_tests import sturmfeste
 
-    sturmfeste.start(vm_sturmfeste=machine1, vm_other=machine2)
+    sturmfeste.start(vm_sturmfeste=vm_sturmfeste, vm_other=vm_other)
   '';
 }

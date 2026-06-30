@@ -15,16 +15,16 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
 
 [tool.setuptools.package-data]
-usertest = ["py.typed"]
+wolkenschloss_tests = ["py.typed"]
 
 [tool.pytest.ini_options]
 log_cli = true
 
 [tool.ty.src]
-include = ["src"]
+include = ["wolkenschloss_tests"]
 
 [tool.ty.rules]
 unresolved-import = "error"
