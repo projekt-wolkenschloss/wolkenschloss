@@ -1,6 +1,7 @@
 {
   inputs,
   pkgs,
+  wolkenschlossTestLib,
   ...
 }:
 {
@@ -14,7 +15,7 @@
   qemu.forceAccel = true;
 
   extraPythonPackages = p: [
-    (p.callPackage ./package.nix { })
+    wolkenschlossTestLib
   ];
 
   node.pkgsReadOnly = false;
@@ -59,8 +60,9 @@
   };
 
   testScript = ''
-    from wolkenschloss_tests import sturmfeste
+    start_all()
 
+    from wolkenschloss_tests import sturmfeste
     sturmfeste.start(vm_sturmfeste=vm_sturmfeste, vm_other=vm_other)
   '';
 }

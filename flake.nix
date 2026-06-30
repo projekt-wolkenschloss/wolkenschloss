@@ -75,15 +75,18 @@
 
       packages =
         let
-          sturmfesteTest = import ./src/tests/sturmfeste.nix {
-            inherit inputs;
-            pkgs = nixpkgs;
-          };
+          sturmfesteTest =
+            testLib:
+            (import ./src/tests/sturmfeste.nix {
+              inherit inputs;
+              pkgs = nixpkgs;
+              wolkenschlossTestLib = testLib;
+            });
         in
-        eachSystem (pkgs: {
+        eachSystem (pkgs: rec {
           test-lib = pkgs.python3.pkgs.callPackage ./src/tests/package.nix { };
           test-minimal = pkgs.testers.runNixOSTest ./src/tests/minimal.nix;
-          test-sturmfeste = pkgs.testers.runNixOSTest sturmfesteTest;
+          test-sturmfeste = pkgs.testers.runNixOSTest (sturmfesteTest test-lib);
         });
 
       # Default based off of https://github.com/the-nix-way/dev-templates
