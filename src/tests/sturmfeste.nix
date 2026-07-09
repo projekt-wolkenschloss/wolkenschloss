@@ -53,8 +53,8 @@
 
       # Add test data
       environment.etc = {
-        "dummy-data/precious-animals.txt".source = ./sturmfeste/test-data/precious-animals.txt;
-        "dummy-data/random-bytes.bin".source = ./sturmfeste/test-data/random-bytes.bin;
+        "dummy-data/precious-animals.txt".source = ./wolkenschloss_tests/test-data/precious-animals.txt;
+        "dummy-data/random-bytes.bin".source = ./wolkenschloss_tests/test-data/random-bytes.bin;
       };
     };
   };
@@ -63,6 +63,6 @@
     start_all()
 
     from wolkenschloss_tests import sturmfeste
-    sturmfeste.start(vm_sturmfeste=vm_sturmfeste, vm_other=vm_other)
+    sturmfeste.start(tester=t, vm_sturmfeste=vm_sturmfeste, vm_other=vm_other)
   '';
 }

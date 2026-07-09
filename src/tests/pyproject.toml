@@ -18,7 +18,7 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 
 [tool.setuptools.package-data]
-wolkenschloss_tests = ["py.typed"]
+wolkenschloss_tests = ["py.typed", "test-data/*"]
 
 [tool.pytest.ini_options]
 log_cli = true
