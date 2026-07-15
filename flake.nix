@@ -79,7 +79,8 @@
             testLib:
             (import ./src/tests/sturmfeste.nix {
               inherit inputs;
-              pkgs = nixpkgs;
+              inherit (inputs.nixpkgs) lib;
+              pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
               wolkenschlossTestLib = testLib;
             });
         in
