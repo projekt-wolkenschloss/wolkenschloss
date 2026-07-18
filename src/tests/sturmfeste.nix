@@ -23,6 +23,7 @@ let
       ''
         ssh-keygen -t ed25519 -C "${name}. ONLY FOR TESTS. PUBLIC. DO NOT USE" -q -N "" -f ${name}
         mkdir -p $out
+        chmod 0400 ${name} ${name}.pub
         mv ${name} ${name}.pub $out
       ''
     );
@@ -37,8 +38,10 @@ in
     inherit (inputs) sops-nix disko;
   };
 
-  globalTimeout = 600;
+  # globalTimeout = 600;
   qemu.forceAccel = true;
+  sshBackdoor.enable = true;
+  enableDebugHook = true;
 
   extraPythonPackages = p: [
     wolkenschlossTestLib
@@ -71,8 +74,15 @@ in
           ../../modules/sturmfeste
         ];
 
+        # Allows ssh backdoor during testing
+        services.openssh.settings.PermitEmptyPasswords = lib.mkForce true;
+        services.openssh.settings.PermitRootLogin = lib.mkForce "yes";
+
         environment.etc = {
-          "ssh/ssh_host_ed25519_key".source = "${sturmfesteHostKey}/sturmfeste";
+          "ssh/ssh_host_ed25519_key" = {
+            source = "${sturmfesteHostKey}/sturmfeste";
+            mode = "0400";
+          };
         };
 
         # Enables the Sturmfeste module
@@ -86,7 +96,13 @@ in
         wolkenschloss.modules.mixins.grafanaAlloyAgent.enable = false;
 
         # Prevent new host dialogs
-        services.openssh.knownHosts."vmother".publicKeyFile = "${otherHostKey}/other.pub";
+        services.openssh.knownHosts."vm_other".publicKeyFile = "${otherHostKey}/other.pub";
+
+        # TODO bug: user creation fails because it cannot read the hashed password from the sops file at /run/secrets ...
+        # Is it because its unencrypted? Test perms in VM. Or is it a bootstrap ordering issue because sops places
+        # the files afterwards?
+        # Password is test
+        wolkenschloss.modules.mixins.nixosAdminUser.user.withHashedPassword = true;
 
         # Configure a backup job
         wolkenschloss.modules.mixins.borgPullModeBackupServer.jobs.vm_other = {
@@ -115,7 +131,10 @@ in
 
       environment.etc = {
         # Add static host key
-        "ssh/ssh_host_ed25519_key".source = "${otherHostKey}/other";
+        "ssh/ssh_host_ed25519_key" = {
+          source = "${otherHostKey}/other";
+          mode = "0400";
+        };
         # Add test data
         "dummy-data/precious-animals.txt".source = ./wolkenschloss_tests/test-data/precious-animals.txt;
         "dummy-data/random-bytes.bin".source = ./wolkenschloss_tests/test-data/random-bytes.bin;

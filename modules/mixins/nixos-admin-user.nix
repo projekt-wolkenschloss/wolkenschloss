@@ -83,7 +83,7 @@ in
     })
     (
       let
-        sopsUserPassRef = "users/nixos/hashed_password";
+        sopsUserPassRef = "users/${moduleConfig.user.name}/hashed_password";
       in
       lib.mkIf (moduleConfig.enable && moduleConfig.user.withHashedPassword) {
         assertions = [
