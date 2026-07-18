@@ -7,7 +7,7 @@
 }:
 
 # TODO:
-# - test ssh connection in interactive mode
+# - Fix backup job naming vm_other vs vmother
 # - test that repo path can be created
 # - figure out service name
 # - copy the rest of the test
@@ -98,11 +98,9 @@ in
         # Prevent new host dialogs
         services.openssh.knownHosts."vm_other".publicKeyFile = "${otherHostKey}/other.pub";
 
-        # TODO bug: user creation fails because it cannot read the hashed password from the sops file at /run/secrets ...
-        # Is it because its unencrypted? Test perms in VM. Or is it a bootstrap ordering issue because sops places
-        # the files afterwards?
-        # Password is test
-        wolkenschloss.modules.mixins.nixosAdminUser.user.withHashedPassword = true;
+        # Password is "test"
+        wolkenschloss.modules.mixins.nixosAdminUser.user.hashedPassword =
+          "$1$.QSlejLZ$lO3iuu29I5ZYh9n7Dss0Q1";
 
         # Configure a backup job
         wolkenschloss.modules.mixins.borgPullModeBackupServer.jobs.vm_other = {

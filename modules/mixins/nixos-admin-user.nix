@@ -26,12 +26,16 @@ in
           };
 
           sshPublicKey = lib.mkOption {
-            type = lib.types.str;
+            type = lib.types.nullOr lib.types.nonEmptyStr;
             example = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname";
             description = "The public ssh key of the user";
           };
 
-          withHashedPassword = lib.mkEnableOption "Whether a hashed password for the user should be set. Needs a sops secrets entry `users/<name>/hashed_password`";
+          hashedPassword = lib.mkOption {
+            type = lib.types.nullOr lib.types.nonEmptyStr;
+            description = "Whether a hashed password for the user should be set. Needs a sops secrets entry `users/<name>/hashed_password`";
+            default = null;
+          };
         };
       };
       default = {
@@ -47,55 +51,37 @@ in
     };
   };
 
-  config = lib.mkMerge [
-    (lib.mkIf moduleConfig.enable {
-      assertions = [
-        {
-          assertion = builtins.elem "@wheel" config.nix.settings.trusted-users;
-          message = "The wheel group must be in the list of nix trusted users when wolkenschloss.nixosAdminUser is enabled.";
-        }
-      ];
+  config = lib.mkIf moduleConfig.enable {
+    assertions = [
+      {
+        assertion = builtins.elem "@wheel" config.nix.settings.trusted-users;
+        message = "The wheel group must be in the list of nix trusted users when wolkenschloss.nixosAdminUser is enabled.";
+      }
+    ];
 
+    users = {
       users = {
-        users = {
-          "${moduleConfig.user.name}" = {
-            isNormalUser = true;
-            extraGroups = [
-              "wheel"
-            ];
-          }
-          // lib.optionalAttrs (moduleConfig.user.sshPublicKey != "") {
-            openssh.authorizedKeys.keys = [
-              "${moduleConfig.user.sshPublicKey}"
-            ];
-          };
+        "${moduleConfig.user.name}" = {
+          isNormalUser = true;
+          extraGroups = [
+            "wheel"
+          ];
+          hashedPassword = moduleConfig.user.hashedPassword;
+        }
+        // lib.optionalAttrs (moduleConfig.user.sshPublicKey != null) {
+          openssh.authorizedKeys.keys = [
+            "${moduleConfig.user.sshPublicKey}"
+          ];
         };
       };
+    };
 
-      security.sudo = {
-        enable = true;
-        # Allow passwordless sudo from wheel users
-        wheelNeedsPassword = false;
-      };
+    security.sudo = {
+      enable = true;
+      # Allow password-less sudo from wheel users
+      wheelNeedsPassword = false;
+    };
 
-      services.openssh.settings.AllowUsers = [ "${moduleConfig.user.name}" ];
-
-    })
-    (
-      let
-        sopsUserPassRef = "users/${moduleConfig.user.name}/hashed_password";
-      in
-      lib.mkIf (moduleConfig.enable && moduleConfig.user.withHashedPassword) {
-        assertions = [
-          {
-            assertion = config.sops.secrets."${sopsUserPassRef}".path != null;
-            message = "You must define a hashed user password in the sops secrets file with key ${sopsUserPassRef}";
-          }
-        ];
-        sops.secrets."${sopsUserPassRef}" = { };
-        users.users."${moduleConfig.user.name}".hashedPasswordFile =
-          config.sops.secrets."${sopsUserPassRef}".path;
-      }
-    )
-  ];
+    services.openssh.settings.AllowUsers = [ "${moduleConfig.user.name}" ];
+  };
 }
