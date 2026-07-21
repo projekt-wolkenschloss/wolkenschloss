@@ -35,6 +35,14 @@
             description = "Path to the ssh private key used for authentication when connecting to the backup client.";
           };
 
+          borgRepoPasswordFilePath = lib.mkOption {
+            type = lib.types.str;
+            example = "/home/user/.secrets/borgJobPassword";
+            description = ''
+              Path to a file that contains the borg repo password for this job. 
+              Must be the same password as in `wolkenschloss.modules.mixins.borgPullModeBackupServer.jobs.<job>.borgRepoPasswordFilePath`'';
+          };
+
           additionalSshArgs = lib.mkOption {
             type = lib.types.str;
             description = "Additional ssh arguments to use when connecting to the backup client";
@@ -54,7 +62,7 @@
             description = "Path to the borg repository on the backup server.";
           };
 
-          borgRepoPasswordFile = lib.mkOption {
+          borgRepoPasswordFilePath = lib.mkOption {
             type = lib.types.str;
             example = "/run/secrets/borg/hostname-repo-password";
             description = "Path to the file containing the borg repository password on the backup server. This should be a file with a single line containing the password.";
@@ -223,7 +231,7 @@
               "network-online.target"
             ];
             environment = {
-              BORG_PASSCOMMAND = "cat ${jobConfig.borgRepoPasswordFile}";
+              BORG_PASSCOMMAND = "cat ${jobConfig.borgRepoPasswordFilePath}";
               BORG_RELOCATED_REPO_ACCESS_IS_OK = "yes";
             };
             serviceConfig =
@@ -259,7 +267,7 @@
                     -i ${jobConfig.backupClient.sshKeyFile} -o StrictHostKeyChecking=accept-new \
                     ${jobConfig.backupClient.additionalSshArgs} \
                     -R ${clientSocketPath}:${serverSocketPath} \
-                    ${jobConfig.backupClient.user}@${sshTargetHost} sudo BORG_PASSCOMMAND=\"cat ${jobConfig.borgRepoPasswordFile}\" BORG_RELOCATED_REPO_ACCESS_IS_OK=yes borg \
+                    ${jobConfig.backupClient.user}@${sshTargetHost} sudo BORG_PASSCOMMAND=\"cat ${jobConfig.backupClient.borgRepoPasswordFilePath}\" BORG_RELOCATED_REPO_ACCESS_IS_OK=yes borg \
                     -v --rsh \"sh -c \'exec socat STDIO UNIX-CONNECT:${clientSocketPath}\'\" \
                     create --compression auto,zstd,9 --stats --checkpoint-interval 600 --show-rc \
                     ssh://server/${repoPath}::"$ARCHIVE_NAME".failure \

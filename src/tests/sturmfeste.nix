@@ -7,10 +7,12 @@
 }:
 
 # TODO:
-# - Fix backup job naming vm_other vs vmother
-# - test that repo path can be created
-# - figure out service name
-# - copy the rest of the test
+# - Find out why the VM drive is only 1 GB even though it is set to 3 GB
+# - Iterate, until the backup job passes
+# - Remove TODOs
+# - Add pre-push hook for TODO checks
+# - Restore backups
+# - Verify contents
 let
   borgRepoSecretFilePathFragment = "dummy-secrets/borg-repo-password";
 
@@ -106,24 +108,29 @@ in
         wolkenschloss.modules.mixins.borgPullModeBackupServer.jobs.vm_other = {
           enable = true;
           borgRepoPath = "/var/lib/backups/vm_other";
-          borgRepoPasswordFile = "/etc/${borgRepoSecretFilePathFragment}";
+          borgRepoPasswordFilePath = "/etc/${borgRepoSecretFilePathFragment}";
           backupSchedule = "*-*-* 03:00:00";
           pathsToBackup = [
             "/etc/dummy-data"
           ];
           backupClient = {
             user = "herbert";
-            hostname = "vmother";
+            hostname = "vm_other";
             sshKeyFile = "/etc/ssh/ssh_host_ed25519_key";
+            borgRepoPasswordFilePath = "/etc/${borgRepoSecretFilePathFragment}";
           };
         };
 
       };
 
-    vm_other = { ... }: {
+    vm_other = { pkgs, ... }: {
       imports = [
         ../../modules/mixins/borg-backup/borg-pull-mode-backup-client.nix
       ];
+
+      # Needed for free disk size check in borg config
+      # TODO test free disk size setting failure
+      virtualisation.diskSize = 3 * 1024;
 
       wolkenschloss.modules.mixins.borgPullModeBackupClient.enable = true;
 
@@ -140,10 +147,17 @@ in
 
       users.users."herbert" = {
         isNormalUser = true;
+        # Password is "test"
+        hashedPassword = "$1$.QSlejLZ$lO3iuu29I5ZYh9n7Dss0Q1";
         openssh.authorizedKeys.keyFiles = [
           "${sturmfesteHostKey}/sturmfeste.pub"
         ];
       };
+
+      security.sudo.extraConfig = ''
+        herbert ALL=(root:root) NOPASSWD:SETENV: ${pkgs.borgbackup}/bin/borg
+        herbert ALL=(root:root) NOPASSWD:SETENV: /run/current-system/sw/bin/borg
+      '';
     };
   };
 
@@ -153,6 +167,12 @@ in
 
     hashed_animals = vm_other.succeed("cksum -a sha3 --length 512 --untagged /etc/dummy-data/precious-animals.txt").split(" ")[0]
     hashed_bytes = vm_other.succeed("cksum -a sha3 --length 512 --untagged /etc/dummy-data/random-bytes.bin").split(" ")[0]
+
+    service_name_base : str = "borgbackup-job-vm_other-for-vm_other" 
+    backup_create_unit_info = vm_sturmfeste.get_unit_info(f"{service_name_base}-create.service")
+    vm_sturmfeste.start_job(f"{service_name_base}-create.service")
+
+
 
 
     service_name = "borgbackup-test-vm-2-local-create.service"
