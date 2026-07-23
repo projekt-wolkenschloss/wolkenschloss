@@ -73,22 +73,17 @@
         };
       };
 
-      packages =
-        let
-          sturmfesteTest =
-            testLib:
-            (import ./src/tests/sturmfeste.nix {
-              inherit inputs;
-              inherit (inputs.nixpkgs) lib;
-              pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
-              wolkenschlossTestLib = testLib;
-            });
-        in
-        eachSystem (pkgs: rec {
-          test-lib = pkgs.python3.pkgs.callPackage ./src/tests/package.nix { };
-          test-minimal = pkgs.testers.runNixOSTest ./src/tests/minimal.nix;
-          test-sturmfeste = pkgs.testers.runNixOSTest (sturmfesteTest test-lib);
-        });
+      packages = eachSystem (pkgs: rec {
+        test-lib = pkgs.python3.pkgs.callPackage ./src/tests/package.nix { };
+        test-minimal = pkgs.testers.runNixOSTest ./src/tests/minimal.nix;
+        test-sturmfeste = pkgs.testers.runNixOSTest (
+          import ./src/tests/sturmfeste.nix {
+            inherit inputs;
+            inherit (inputs.nixpkgs) lib;
+            pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+          }
+        );
+      });
 
       # Default based off of https://github.com/the-nix-way/dev-templates
       devShells = forEachSupportedSystem (

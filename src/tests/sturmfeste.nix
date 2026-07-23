@@ -2,17 +2,9 @@
   inputs,
   pkgs,
   lib,
-  wolkenschlossTestLib,
   ...
 }:
 
-# TODO:
-# - Find out why the VM drive is only 1 GB even though it is set to 3 GB
-# - Iterate, until the backup job passes
-# - Remove TODOs
-# - Add pre-push hook for TODO checks
-# - Restore backups
-# - Verify contents
 let
   borgRepoSecretFilePathFragment = "dummy-secrets/borg-repo-password";
 
@@ -43,11 +35,6 @@ in
   # globalTimeout = 600;
   qemu.forceAccel = true;
   sshBackdoor.enable = true;
-  enableDebugHook = true;
-
-  extraPythonPackages = p: [
-    wolkenschlossTestLib
-  ];
 
   node.pkgsReadOnly = false;
 
@@ -63,7 +50,6 @@ in
   nodes = {
     vm_sturmfeste =
       {
-        pkgs,
         sops-nix,
         disko,
         ...
@@ -79,6 +65,9 @@ in
         # Allows ssh backdoor during testing
         services.openssh.settings.PermitEmptyPasswords = lib.mkForce true;
         services.openssh.settings.PermitRootLogin = lib.mkForce "yes";
+
+        # Provide enough free space for borg's additional_free_space setting.
+        virtualisation.diskSize = 4 * 1024;
 
         environment.etc = {
           "ssh/ssh_host_ed25519_key" = {
@@ -129,7 +118,6 @@ in
       ];
 
       # Needed for free disk size check in borg config
-      # TODO test free disk size setting failure
       virtualisation.diskSize = 3 * 1024;
 
       wolkenschloss.modules.mixins.borgPullModeBackupClient.enable = true;
@@ -140,9 +128,15 @@ in
           source = "${otherHostKey}/other";
           mode = "0400";
         };
-        # Add test data
-        "dummy-data/precious-animals.txt".source = ./wolkenschloss_tests/test-data/precious-animals.txt;
-        "dummy-data/random-bytes.bin".source = ./wolkenschloss_tests/test-data/random-bytes.bin;
+      };
+
+      # Copy test data to a real directory so borg archives regular files, not symlinks.
+      system.activationScripts.dummyData = {
+        text = ''
+          mkdir -p /etc/dummy-data
+          cp ${./wolkenschloss_tests/test-data/precious-animals.txt} /etc/dummy-data/precious-animals.txt
+          cp ${./wolkenschloss_tests/test-data/random-bytes.bin} /etc/dummy-data/random-bytes.bin
+        '';
       };
 
       users.users."herbert" = {
@@ -162,30 +156,53 @@ in
   };
 
   testScript = ''
-    # TODO add wait conditions
     start_all()
 
-    hashed_animals = vm_other.succeed("cksum -a sha3 --length 512 --untagged /etc/dummy-data/precious-animals.txt").split(" ")[0]
-    hashed_bytes = vm_other.succeed("cksum -a sha3 --length 512 --untagged /etc/dummy-data/random-bytes.bin").split(" ")[0]
+    service_name = "borgbackup-job-vm_other-for-vm_other-create.service"
+    timer_name = "borgbackup-job-vm_other-for-vm_other-create.timer"
+    repo_path = "/var/lib/backups/vm_other"
 
-    service_name_base : str = "borgbackup-job-vm_other-for-vm_other" 
-    backup_create_unit_info = vm_sturmfeste.get_unit_info(f"{service_name_base}-create.service")
-    vm_sturmfeste.start_job(f"{service_name_base}-create.service")
+    vm_sturmfeste.wait_for_unit(timer_name)
 
+    # First backup run initializes the repo and creates the first archive.
+    vm_sturmfeste.succeed(f"systemctl start {service_name}")
 
+    # Second backup run verifies that repetition (and compression) works.
+    vm_sturmfeste.succeed(f"systemctl start {service_name}")
 
+    # Verify there are at least two archives and identify the latest one.
+    archives = vm_sturmfeste.succeed(
+        "BORG_PASSCOMMAND='cat /etc/${borgRepoSecretFilePathFragment}' "
+        f"borg list --short {repo_path}"
+    ).splitlines()
+    assert len(archives) >= 2, f"Expected at least two archives, got: {archives}"
 
-    service_name = "borgbackup-test-vm-2-local-create.service"
-    timer_name = "borgbackup-test-vm-2-local-create.timer"
-    repo_path = "/tank1/backups/test-vm-2"
+    latest_archive = archives[-1]
 
-    # print("Checking systemd units")
-    # result = vm_1_client.run(f"systemctl is-active {timer_name}")
-    # assert result.exit_code == 0
-    # assert result.stdout.strip() == "active"
+    # Restore the latest archive to a temporary directory.
+    restore_dir = "/tmp/restored-vm-other"
+    vm_sturmfeste.succeed(f"rm -rf {restore_dir} && mkdir -p {restore_dir}")
+    vm_sturmfeste.succeed(
+        f"cd {restore_dir} && "
+        "BORG_PASSCOMMAND='cat /etc/${borgRepoSecretFilePathFragment}' "
+        f"borg extract {repo_path}::{latest_archive} --strip-components=1"
+    )
 
-    # # Check that the backup create service has not run yet
-    # result = vm_1_client.run(f"journalctl -u {timer_name} -b --no-pager")
-    # assert len(result.stdout.splitlines()) == 1
+    # Compare BLAKE2b checksums of the original and restored files.
+    original_hashes = set(
+        vm_other.succeed(
+            "b2sum /etc/dummy-data/precious-animals.txt /etc/dummy-data/random-bytes.bin"
+        ).split()[0::2]
+    )
+    restored_hashes = set(
+        vm_sturmfeste.succeed(
+            f"b2sum {restore_dir}/dummy-data/precious-animals.txt "
+            f"{restore_dir}/dummy-data/random-bytes.bin"
+        ).split()[0::2]
+    )
+    assert original_hashes == restored_hashes, (
+        f"Restored file hashes do not match originals: "
+        f"original={original_hashes} restored={restored_hashes}"
+    )
   '';
 }
