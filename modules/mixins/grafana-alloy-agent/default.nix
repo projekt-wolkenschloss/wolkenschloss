@@ -52,9 +52,6 @@ in
       restartUnits = [ "alloy.service" ];
     };
 
-    # TODO remove once caddy is migrated or external debug access is not required anymore
-    networking.firewall.allowedTCPPorts = [ alloyPort ];
-
     environment.etc =
       let
         baseAlloyConfig = builtins.readFile ./config.alloy;

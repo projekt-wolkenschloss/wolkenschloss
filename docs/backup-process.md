@@ -22,14 +22,20 @@ sequenceDiagram
 
 ## Configuring Backup Clients
 
-### Configuring a Wolkenschloss Host
+### Configuring a NixOS Host
 
 Use the `wolkenschloss.modules.mixins.borgPullModeBackupClient` mixin to configure a Wolkenschloss host to be backed up by a Sturmfeste backup server.
 
-Additionally, you need
+Additionally, the target user must be allowed execute borg:
 
-- the target user must be allowed to sudo when executing borg (TODO example) `security.sudo.extraConfig
-- the repo password must be in a plain text file at the same location as configured for the job on the server (TODO example)
+```shell
+security.sudo.extraConfig = ''
+  herbert ALL=(root:root) NOPASSWD:SETENV: ${pkgs.borgbackup}/bin/borg
+  herbert ALL=(root:root) NOPASSWD:SETENV: /run/current-system/sw/bin/borg
+'';
+```
+
+Lastly, the repo password must be in a plain text file at the location configured for the job on the server.
 
 ### Configuring a non-NixOS Backup Client
 

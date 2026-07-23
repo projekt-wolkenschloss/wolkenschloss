@@ -218,7 +218,6 @@
           jobConfig,
         }:
         let
-          # TODO normalize?
           hostname = jobConfig.backupClient.hostname;
           unitName = mkCreateUnitName jobName hostname;
         in
