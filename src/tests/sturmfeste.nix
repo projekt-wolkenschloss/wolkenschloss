@@ -32,9 +32,8 @@ in
     inherit (inputs) sops-nix disko;
   };
 
-  # globalTimeout = 600;
+  globalTimeout = 600;
   qemu.forceAccel = true;
-  sshBackdoor.enable = true;
 
   node.pkgsReadOnly = false;
 
@@ -67,7 +66,7 @@ in
         services.openssh.settings.PermitRootLogin = lib.mkForce "yes";
 
         # Provide enough free space for borg's additional_free_space setting.
-        virtualisation.diskSize = 4 * 1024;
+        virtualisation.diskSize = 3 * 1024;
 
         environment.etc = {
           "ssh/ssh_host_ed25519_key" = {
@@ -130,12 +129,12 @@ in
         };
       };
 
-      # Copy test data to a real directory so borg archives regular files, not symlinks.
       system.activationScripts.dummyData = {
         text = ''
           mkdir -p /etc/dummy-data
-          cp ${./wolkenschloss_tests/test-data/precious-animals.txt} /etc/dummy-data/precious-animals.txt
-          cp ${./wolkenschloss_tests/test-data/random-bytes.bin} /etc/dummy-data/random-bytes.bin
+
+          echo -e "Tigers\nTortoises\nApes!\nWhy are you reading this?" > /etc/dummy-data/precious-animals.txt
+          head -c 2M /dev/urandom > /etc/dummy-data/random-bytes.bin
         '';
       };
 
@@ -164,13 +163,12 @@ in
 
     vm_sturmfeste.wait_for_unit(timer_name)
 
-    # First backup run initializes the repo and creates the first archive.
+    # First backup run
     vm_sturmfeste.succeed(f"systemctl start {service_name}")
 
-    # Second backup run verifies that repetition (and compression) works.
+    # Second backup run
     vm_sturmfeste.succeed(f"systemctl start {service_name}")
 
-    # Verify there are at least two archives and identify the latest one.
     archives = vm_sturmfeste.succeed(
         "BORG_PASSCOMMAND='cat /etc/${borgRepoSecretFilePathFragment}' "
         f"borg list --short {repo_path}"
@@ -179,7 +177,7 @@ in
 
     latest_archive = archives[-1]
 
-    # Restore the latest archive to a temporary directory.
+    # Restore the latest archive
     restore_dir = "/tmp/restored-vm-other"
     vm_sturmfeste.succeed(f"rm -rf {restore_dir} && mkdir -p {restore_dir}")
     vm_sturmfeste.succeed(
@@ -188,7 +186,7 @@ in
         f"borg extract {repo_path}::{latest_archive} --strip-components=1"
     )
 
-    # Compare BLAKE2b checksums of the original and restored files.
+    # Compare checksums
     original_hashes = set(
         vm_other.succeed(
             "b2sum /etc/dummy-data/precious-animals.txt /etc/dummy-data/random-bytes.bin"
