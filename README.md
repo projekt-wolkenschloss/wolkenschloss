@@ -26,12 +26,13 @@ Also, the project is currently only a hobby of the maintainers. With we, I mean 
 
 ## Roadmap
 
-A rough roadmap with a rough order of whats next:
+A rough roadmap of whats next:
 
 - [x] Basic backup system for other hosts (Sturmfeste)
+- [x] Automatic tests for the backup system
 - [ ] Basic CI/CD including infrastructure
-- [ ] Automatic tests for the backup system
 - [ ] Bootable system image for Sturmfeste
+- [ ] Replace borg and pull mode backups with restic
 - [ ] Basic main server with Immich and a reverse proxy (Wolkenschloss)
 
 ## Getting Started

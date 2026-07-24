@@ -37,3 +37,6 @@ result
 
 # Opencode
 .opencode/package-lock.json
+
+# Project specifics
+docs/architecture/arc42-template

@@ -38,6 +38,7 @@ Explain the reasons for doing the particular decision. This can include
 - constraints
 - personal bias and feelings
 - team structure and skills
+- considered options, if the alternatives are worth remembering
 and more. 
 Reference existing DRs, if available
 -->
