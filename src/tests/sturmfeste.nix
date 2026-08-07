@@ -78,7 +78,9 @@ in
         # Enables the Sturmfeste module
         pwks.sturmfeste = {
           enable = true;
-          adminPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname";
+          adminPublicKeys = [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname"
+          ];
           secretsFile = ./sturmfeste/secrets.json;
         };
 

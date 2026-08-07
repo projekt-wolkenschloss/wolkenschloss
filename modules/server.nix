@@ -17,8 +17,8 @@ in
   options.wolkenschloss.modules.server = {
     enable = lib.mkEnableOption "Enables the server role";
 
-    adminPublicKey = lib.mkOption {
-      type = lib.types.str;
+    adminPublicKeys = lib.mkOption {
+      type = lib.types.listOf lib.types.nonEmptyStr;
       description = "The public SSH key of the administrator user.";
       example = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICV...";
     };
@@ -74,7 +74,7 @@ in
       enable = true;
       user = {
         name = "nixos";
-        sshPublicKey = moduleConfig.adminPublicKey;
+        sshPublicKeys = moduleConfig.adminPublicKeys;
       };
     };
 

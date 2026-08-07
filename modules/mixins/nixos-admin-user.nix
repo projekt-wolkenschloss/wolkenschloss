@@ -19,16 +19,18 @@ in
       type = lib.types.submodule {
         options = {
           name = lib.mkOption {
-            type = lib.types.str;
+            type = lib.types.nonEmptyStr;
             default = "nixos";
             example = "nixos";
             description = "Name of the user";
           };
 
-          sshPublicKey = lib.mkOption {
-            type = lib.types.nullOr lib.types.nonEmptyStr;
-            example = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname";
-            description = "The public ssh key of the user";
+          sshPublicKeys = lib.mkOption {
+            type = lib.types.listOf lib.types.nonEmptyStr;
+            example = [
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname"
+            ];
+            description = "The public ssh keys of the user";
           };
 
           hashedPassword = lib.mkOption {
@@ -40,12 +42,14 @@ in
       };
       default = {
         name = "nixos";
-        sshPublicKey = "";
+        sshPublicKeys = [ ];
       };
       example = ''
         {
           name = "nixos"
-          sshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname" 
+          sshPublicKeys = [
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname"
+          ]; 
         };
       '';
     };
@@ -67,11 +71,8 @@ in
             "wheel"
           ];
           hashedPassword = moduleConfig.user.hashedPassword;
-        }
-        // lib.optionalAttrs (moduleConfig.user.sshPublicKey != null) {
-          openssh.authorizedKeys.keys = [
-            "${moduleConfig.user.sshPublicKey}"
-          ];
+
+          openssh.authorizedKeys.keys = moduleConfig.user.sshPublicKeys;
         };
       };
     };

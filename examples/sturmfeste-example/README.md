@@ -69,7 +69,9 @@ To use it properly, you need to enable and configure it in your `configuration.n
   wks.sturmfeste = {
     enable = true;
     # To get ssh access
-    adminPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname";
+    adminPublicKeys = [ 
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname"
+    ];
     # SOPS secrets used by the host and Wolkenschloss modules.
     secretsFile = ./secrets.json;
   };

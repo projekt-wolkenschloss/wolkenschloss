@@ -16,10 +16,12 @@ in
   options.pwks.sturmfeste = {
     enable = lib.mkEnableOption "Enables the Sturmfeste role";
 
-    adminPublicKey = lib.mkOption {
-      type = lib.types.str;
-      description = "The public SSH key of the administrator";
-      example = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname";
+    adminPublicKeys = lib.mkOption {
+      type = lib.types.listOf lib.types.nonEmptyStr;
+      description = "The public SSH keys of the administrator";
+      example = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRTzZFhr6KACic0O5G1n+erg07weo+YFrC5UKCuB/py username@hostname"
+      ];
     };
 
     secretsFile = lib.mkOption {
@@ -32,7 +34,7 @@ in
   config = lib.mkIf moduleCfg.enable {
     wolkenschloss.modules.server.enable = true;
 
-    wolkenschloss.modules.server.adminPublicKey = moduleCfg.adminPublicKey;
+    wolkenschloss.modules.server.adminPublicKeys = moduleCfg.adminPublicKeys;
 
     wolkenschloss.modules.mixins.sops.secretsFile = moduleCfg.secretsFile;
 
